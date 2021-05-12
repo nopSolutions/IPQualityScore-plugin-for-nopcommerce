@@ -1,0 +1,24 @@
+﻿@model DeviceFingerprintModel
+
+@Html.Raw(Model.TrackingCode);
+
+<script>
+    if (typeof Startup !== "undefined") {
+        Startup.AfterResult(function (result) {
+            if (result.fraud_chance >= @Model.FraudChance) {
+                window.location.href = '@Url.Action("PreventFraud", "IPQualityScore")';
+            }
+        });
+
+        Startup.AfterFailure(function () {
+            // user has blocked the second JavaScript call
+            // can redirect or perform other business logic if JS is not loaded
+            window.location.href = '@Url.Action("PreventFraud", "IPQualityScore")';
+        });
+    }
+    else {
+        // user has blocked the initial JavaScript call
+	    // can redirect or perform other business logic if JS is not loaded
+        window.location.href = '@Url.Action("PreventFraud", "IPQualityScore")';
+    }
+</script>
