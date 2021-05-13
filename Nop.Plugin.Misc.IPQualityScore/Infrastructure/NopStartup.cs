@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nop.Core.Infrastructure;
+using Nop.Data;
 using Nop.Plugin.Misc.IPQualityScore.Services;
 using Nop.Web.Framework.Infrastructure.Extensions;
 
@@ -21,7 +22,9 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
         public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
             services.AddHttpClient<IPQualityScoreApi>().WithProxy();
-            services.Configure<MvcOptions>(options => options.Filters.Add(typeof(IPQualityScoreAsyncActionFilter)));
+
+            if (DataSettingsManager.DatabaseIsInstalled)
+                services.Configure<MvcOptions>(options => options.Filters.Add(typeof(IPQualityScoreAsyncActionFilter)));
         }
 
         /// <summary>
