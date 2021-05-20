@@ -190,6 +190,16 @@
                                                         <span asp-validation-for="RejectStatusId"></span>
                                                     </div>
                                                 </div>
+                                                <div class="form-group">
+                                                    <div class="col-md-3">
+                                                        <nop-override-store-checkbox asp-for="InformCustomerAboutFraud_OverrideForStore" asp-input="InformCustomerAboutFraud" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                                                        <nop-label asp-for="InformCustomerAboutFraud" />
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <nop-editor asp-for="InformCustomerAboutFraud" />
+                                                        <span asp-validation-for="InformCustomerAboutFraud"></span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </nop-nested-setting>
                                     </div>
@@ -221,7 +231,7 @@
                                                 <nop-label asp-for="EmailReputationFraudScoreForBlocking" />
                                             </div>
                                             <div class="col-md-9">
-                                                <nop-editor asp-for="EmailReputationFraudScoreForBlocking" />
+                                                <nop-editor asp-for="EmailReputationFraudScoreForBlocking" asp-required="true" />
                                                 <span asp-validation-for="EmailReputationFraudScoreForBlocking"></span>
                                             </div>
                                         </div>
@@ -231,7 +241,7 @@
                                                 <nop-label asp-for="EmailReputationStrictness" />
                                             </div>
                                             <div class="col-md-9">
-                                                <nop-editor asp-for="EmailReputationStrictness" />
+                                                <nop-editor asp-for="EmailReputationStrictness" asp-required="true" />
                                                 <span asp-validation-for="EmailReputationStrictness"></span>
                                             </div>
                                         </div>
@@ -241,7 +251,7 @@
                                                 <nop-label asp-for="AbuseStrictness" />
                                             </div>
                                             <div class="col-md-9">
-                                                <nop-editor asp-for="AbuseStrictness" />
+                                                <nop-editor asp-for="AbuseStrictness" asp-required="true" />
                                                 <span asp-validation-for="AbuseStrictness"></span>
                                             </div>
                                         </div>
@@ -274,7 +284,7 @@
                                                 <nop-label asp-for="DeviceFingerprintFraudChance" />
                                             </div>
                                             <div class="col-md-9">
-                                                <nop-editor asp-for="DeviceFingerprintFraudChance" />
+                                                <nop-editor asp-for="DeviceFingerprintFraudChance" asp-required="true" />
                                                 <span asp-validation-for="DeviceFingerprintFraudChance"></span>
                                             </div>
                                         </div>
@@ -284,11 +294,21 @@
                                                 <nop-label asp-for="DeviceFingerprintTrackingCode" />
                                             </div>
                                             <div class="col-md-9">
-                                                <nop-textarea asp-for="DeviceFingerprintTrackingCode" />
+                                                <nop-textarea asp-for="DeviceFingerprintTrackingCode" asp-required="true" />
                                                 <span asp-validation-for="DeviceFingerprintTrackingCode"></span>
                                                 <div class="callout callout-info" style="margin: 0 0 10px 0 !important;">
                                                     @T("Plugins.Misc.IPQualityScore.Fields.DeviceFingerprintTrackingCode.Instructions")
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <nop-override-store-checkbox asp-for="BlockUserIfScriptIsBlocked_OverrideForStore" asp-input="BlockUserIfScriptIsBlocked" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                                                <nop-label asp-for="BlockUserIfScriptIsBlocked" />
+                                            </div>
+                                            <div class="col-md-9">
+                                                <nop-editor asp-for="BlockUserIfScriptIsBlocked" />
+                                                <span asp-validation-for="BlockUserIfScriptIsBlocked"></span>
                                             </div>
                                         </div>
                                     </div>

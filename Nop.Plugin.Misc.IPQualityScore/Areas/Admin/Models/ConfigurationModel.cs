@@ -125,6 +125,13 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
 
         public List<SelectListItem> AvailableOrderStatuses { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to inform the user about potential fraud
+        /// </summary>
+        [NopResourceDisplayName("Plugins.Misc.IPQualityScore.Fields.InformCustomerAboutFraud")]
+        public bool InformCustomerAboutFraud { get; set; }
+        public bool InformCustomerAboutFraud_OverrideForStore { get; set; }
+
         #endregion
 
         #endregion
@@ -183,6 +190,13 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
         [NopResourceDisplayName("Plugins.Misc.IPQualityScore.Fields.DeviceFingerprintFraudChance")]
         public int DeviceFingerprintFraudChance { get; set; }
         public bool DeviceFingerprintFraudChance_OverrideForStore { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to block the user if script is blocked by that user
+        /// </summary>
+        [NopResourceDisplayName("Plugins.Misc.IPQualityScore.Fields.BlockUserIfScriptIsBlocked")]
+        public bool BlockUserIfScriptIsBlocked { get; set; }
+        public bool BlockUserIfScriptIsBlocked_OverrideForStore { get; set; }
 
         #endregion
 

@@ -124,6 +124,7 @@ namespace Nop.Plugin.Misc.IPQualityScore
                 TransactionStrictness = 0,
                 ApproveStatusId = (int)OrderStatus.Processing,
                 RejectStatusId = (int)OrderStatus.Cancelled,
+                InformCustomerAboutFraud = true,
 
                 // Email reputation
                 EmailValidationEnabled = true,
@@ -150,6 +151,7 @@ namespace Nop.Plugin.Misc.IPQualityScore
                 ["Plugins.Misc.IPQualityScore.IPReputation"] = "Proxy Detection & Fraud Prevention",
                 ["Plugins.Misc.IPQualityScore.IPReputation.OrderScoring"] = "Order Fraud Detection",
                 ["Plugins.Misc.IPQualityScore.PreventFraudPage.Content"] = "Unfortunately we were unable to process this action. Please contact us if this error persists.",
+                ["Plugins.Misc.IPQualityScore.Order.MessageToCustomerWhenFraudIsDetected"] = "We detected fraudulent activity in relation to this order, so we changed the order status to '{0}'.",
                 ["Plugins.Misc.IPQualityScore.Fields.AbuseStrictness"] = "Abuse strictness",
                 ["Plugins.Misc.IPQualityScore.Fields.AbuseStrictness.Hint"] = "Set the strictness level for machine learning pattern recognition of abusive email addresses. Default level of 0 provides good coverage, however if you are filtering account applications and facing advanced fraudsters then we recommend increasing this value to level 1 or 2.",
                 ["Plugins.Misc.IPQualityScore.Fields.AbuseStrictness.FromZeroToTwo"] = "The abuse strictness should be in range from 0 to 2.",
@@ -206,6 +208,10 @@ namespace Nop.Plugin.Misc.IPQualityScore
                 ["Plugins.Misc.IPQualityScore.Fields.TransactionStrictness.FromZeroToTwo"] = "The transaction strictness should be in range from 0 to 2.",
                 ["Plugins.Misc.IPQualityScore.Fields.VpnBlockingEnabled"] = "Block VPN",
                 ["Plugins.Misc.IPQualityScore.Fields.VpnBlockingEnabled.Hint"] = "Check to block the VPN connections.",
+                ["Plugins.Misc.IPQualityScore.Fields.BlockUserIfScriptIsBlocked"] = "Block user if the tracking code is blocked by user",
+                ["Plugins.Misc.IPQualityScore.Fields.BlockUserIfScriptIsBlocked.Hint"] = "Check to block user if the tracking code is blocked  by user. Blocked user will redirect to the prevent fraud page.",
+                ["Plugins.Misc.IPQualityScore.Fields.InformCustomerAboutFraud"] = "Inform the customer about fraud",
+                ["Plugins.Misc.IPQualityScore.Fields.InformCustomerAboutFraud.Hint"] = "Check to inform the customer about potential fraud in the order notes.",
             });
 
             base.Install();

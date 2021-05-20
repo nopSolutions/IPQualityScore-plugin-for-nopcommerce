@@ -12,7 +12,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
         /// <param name="endpointRouteBuilder">Route builder</param>
         public void RegisterRoutes(IEndpointRouteBuilder endpointRouteBuilder)
         {
-            endpointRouteBuilder.MapControllerRoute(Defaults.PreventFraudRouteName, "/IPQualityScore/PreventFraud",
+            endpointRouteBuilder.MapControllerRoute(Defaults.PreventFraudRouteName, "/prevent-fraud",
                 new { controller = "IPQualityScore", action = "PreventFraud" });
         }
 

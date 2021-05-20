@@ -1,7 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Nop.Core;
 using Nop.Plugin.Misc.IPQualityScore.Services;
+using Nop.Services.Localization;
 
 namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
 {
@@ -13,15 +15,21 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
         #region Fields
 
         private readonly IPQualityScoreService _iPQualityScoreService;
+        private readonly ILocalizationService _localizationService;
+        private readonly IWebHelper _webHelper;
 
         #endregion
 
         #region Ctor
 
         public IPQualityScoreAsyncActionFilter(
-            IPQualityScoreService iPQualityScoreService)
+            IPQualityScoreService iPQualityScoreService,
+            ILocalizationService localizationService,
+            IWebHelper webHelper)
         {
             _iPQualityScoreService = iPQualityScoreService;
+            _localizationService = localizationService;
+            _webHelper = webHelper;
         }
 
         #endregion
@@ -41,7 +49,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
                 var isValid = await _iPQualityScoreService.ValidateRequestAsync(context);
                 if (!isValid)
                 {
-                    context.Result = new RedirectToActionResult("PreventFraud", "IPQualityScore", null);
+                    context.Result = GeneratePreventFraudResult(context);
                     return;
                 }
             }
@@ -51,12 +59,28 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
                 var isValid = await _iPQualityScoreService.ValidateEmailForRequestAsync(context);
                 if (!isValid)
                 {
-                    context.Result = new RedirectToActionResult("PreventFraud", "IPQualityScore", null);
+                    context.Result = GeneratePreventFraudResult(context);
                     return;
                 }
             }
 
             await next();
+        }
+
+        #endregion
+
+        #region Utilities
+
+        private IActionResult GeneratePreventFraudResult(ActionExecutingContext context)
+        {
+            if (!_webHelper.IsAjaxRequest(context.HttpContext.Request))
+                return new RedirectToActionResult("PreventFraud", "IPQualityScore", null);
+            else
+            {
+                var fraudMessage = _localizationService
+                    .GetResource("Plugins.Misc.IPQualityScore.PreventFraudPage.Content");
+                return new BadRequestObjectResult(fraudMessage);
+            }
         }
 
         #endregion

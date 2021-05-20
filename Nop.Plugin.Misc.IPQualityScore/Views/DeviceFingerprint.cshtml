@@ -1,6 +1,6 @@
 ﻿@model DeviceFingerprintModel
 
-@Html.Raw(Model.TrackingCode);
+@Html.Raw(Model.TrackingCode)
 
 <script>
     if (typeof Startup !== "undefined") {
@@ -17,8 +17,13 @@
         });
     }
     else {
-        // user has blocked the initial JavaScript call
-	    // can redirect or perform other business logic if JS is not loaded
-        window.location.href = '@Url.Action("PreventFraud", "IPQualityScore")';
+        @if (Model.BlockUserIfScriptIsBlocked)
+        {
+            // user has blocked the initial JavaScript call
+            // can redirect or perform other business logic if JS is not loaded
+            <text>
+                window.location.href = '@Url.Action("PreventFraud", "IPQualityScore")';
+            </text>
+        }
     }
 </script>

@@ -16,6 +16,7 @@ using Nop.Services.Common;
 using Nop.Services.Customers;
 using Nop.Services.Directory;
 using Nop.Services.Helpers;
+using Nop.Services.Localization;
 using Nop.Services.Logging;
 using Nop.Services.Orders;
 
@@ -32,6 +33,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         private readonly IOrderProcessingService _orderProcessingService;
         private readonly IPQualityScoreApi _iPQualityScoreApi;
         private readonly IPQualityScoreSettings _iPQualityScoreSettings;
+        private readonly ILocalizationService _localizationService;
         private readonly ILogger _logger;
         private readonly IUserAgentHelper _userAgentHelper;
         private readonly IWidgetPluginManager _widgetPluginManager;
@@ -50,6 +52,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             IOrderProcessingService orderProcessingService,
             IPQualityScoreApi iPQualityScoreApi,
             IPQualityScoreSettings iPQualityScoreSettings,
+            ILocalizationService localizationService,
             ILogger logger,
             IUserAgentHelper userAgentHelper,
             IWidgetPluginManager widgetPluginManager,
@@ -63,6 +66,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             _orderProcessingService = orderProcessingService;
             _iPQualityScoreApi = iPQualityScoreApi;
             _iPQualityScoreSettings = iPQualityScoreSettings;
+            _localizationService = localizationService;
             _logger = logger;
             _userAgentHelper = userAgentHelper;
             _widgetPluginManager = widgetPluginManager;
@@ -84,11 +88,17 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             if (actionContext is null)
                 throw new ArgumentNullException(nameof(actionContext));
 
-            if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
-                return false;
-
-            if (!_iPQualityScoreSettings.IPReputationEnabled)
-                return false;
+            var customer = _workContext.CurrentCustomer;
+            if (customer.IsSystemAccount)
+            {
+                if (!_userAgentHelper.IsSearchEngine())
+                    return false;
+                else
+                {
+                    if (_iPQualityScoreSettings.AllowCrawlers)
+                        return false;
+                }
+            }
 
             if (_workContext.IsAdmin)
                 return false;
@@ -104,11 +114,16 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
                 return false;
 
             var ipAddress = _webHelper.GetCurrentIpAddress();
-            if (string.IsNullOrEmpty(ipAddress))
+            if (string.IsNullOrEmpty(ipAddress) || ipAddress.Equals("127.0.0.1"))
                 return false;
 
-            var customer = _workContext.CurrentCustomer;
-            if (customer.IsSystemAccount || _customerService.IsAdmin(customer))
+            if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
+                return false;
+
+            if (!_iPQualityScoreSettings.IPReputationEnabled)
+                return false;
+
+            if (_customerService.IsAdmin(customer))
                 return false;
 
             return IsConfigured();
@@ -183,6 +198,16 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         public virtual void RejectOrder(Order order)
         {
             SetOrderStatus(order, _iPQualityScoreSettings.RejectStatusId);
+            
+            _orderService.InsertOrderNote(new OrderNote
+            {
+                OrderId = order.Id,
+                DisplayToCustomer = _iPQualityScoreSettings.InformCustomerAboutFraud,
+                CreatedOnUtc = DateTime.UtcNow,
+                Note = string.Format(
+                    _localizationService.GetResource("Plugins.Misc.IPQualityScore.Order.MessageToCustomerWhenFraudIsDetected"),
+                    _localizationService.GetLocalizedEnum(order.OrderStatus))
+            });
         }
 
         /// <summary>
@@ -194,12 +219,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         {
             if (actionContext is null)
                 throw new ArgumentNullException(nameof(actionContext));
-
-            if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
-                return false;
-
-            if (!_iPQualityScoreSettings.EmailValidationEnabled)
-                return false;
 
             if (actionContext.HttpContext.Request.Method != HttpMethods.Post)
                 return false;
@@ -218,6 +237,12 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
                 return false;
 
             if (!actionContext.HttpContext.Request.Form.TryGetValue("Email", out var email))
+                return false;
+
+            if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
+                return false;
+
+            if (!_iPQualityScoreSettings.EmailValidationEnabled)
                 return false;
 
             var customer = _workContext.CurrentCustomer;
@@ -269,7 +294,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
 
             var isFraud = response.FraudScore >= _iPQualityScoreSettings.EmailReputationFraudScoreForBlocking;
 
-            return response.Success && response.Valid && response.Disposable && !isFraud && !response.RecentAbuse;
+            return response.Success && response.Valid && !response.Disposable && !isFraud && !response.RecentAbuse;
         }
 
         /// <summary>

@@ -87,7 +87,9 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
                 DeviceFingerprintEnabled = iPQualityScoreSettings.DeviceFingerprintEnabled,
                 DeviceFingerprintTrackingCode = iPQualityScoreSettings.DeviceFingerprintTrackingCode,
                 DeviceFingerprintFraudChance = iPQualityScoreSettings.DeviceFingerprintFraudChance,
-                AllowCrawlers = iPQualityScoreSettings.AllowCrawlers
+                AllowCrawlers = iPQualityScoreSettings.AllowCrawlers,
+                BlockUserIfScriptIsBlocked = iPQualityScoreSettings.BlockUserIfScriptIsBlocked,
+                InformCustomerAboutFraud = iPQualityScoreSettings.InformCustomerAboutFraud,
             };
 
             var orderStatusItems = OrderStatus.Pending.ToSelectList(false);
@@ -118,6 +120,8 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
                 model.DeviceFingerprintTrackingCode_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.DeviceFingerprintTrackingCode, storeScope);
                 model.DeviceFingerprintFraudChance_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.DeviceFingerprintFraudChance, storeScope);
                 model.AllowCrawlers_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.AllowCrawlers, storeScope);
+                model.BlockUserIfScriptIsBlocked_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.BlockUserIfScriptIsBlocked, storeScope);
+                model.InformCustomerAboutFraud_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.InformCustomerAboutFraud, storeScope);
             }
 
             return View("~/Plugins/Misc.IPQualityScore/Areas/Admin/Views/Configure.cshtml", model);
@@ -131,7 +135,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult Configure(ConfigurationModel model)
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManagePaymentMethods))
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManagePlugins))
                 return AccessDeniedView();
 
             if (!ModelState.IsValid)
@@ -164,6 +168,8 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
             iPQualityScoreSettings.DeviceFingerprintTrackingCode = model.DeviceFingerprintTrackingCode;
             iPQualityScoreSettings.DeviceFingerprintFraudChance = model.DeviceFingerprintFraudChance;
             iPQualityScoreSettings.AllowCrawlers = model.AllowCrawlers;
+            iPQualityScoreSettings.BlockUserIfScriptIsBlocked = model.BlockUserIfScriptIsBlocked;
+            iPQualityScoreSettings.InformCustomerAboutFraud = model.InformCustomerAboutFraud;
 
             /* We do not clear cache after each setting update.
              * This behavior can increase performance because cached settings will not be cleared 
@@ -190,6 +196,8 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.DeviceFingerprintTrackingCode, model.DeviceFingerprintTrackingCode_OverrideForStore, storeScope, false);
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.DeviceFingerprintFraudChance, model.DeviceFingerprintFraudChance_OverrideForStore, storeScope, false);
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.AllowCrawlers, model.AllowCrawlers_OverrideForStore, storeScope, false);
+            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.BlockUserIfScriptIsBlocked, model.BlockUserIfScriptIsBlocked_OverrideForStore, storeScope, false);
+            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.InformCustomerAboutFraud, model.InformCustomerAboutFraud_OverrideForStore, storeScope, false);
 
             //now clear settings cache
             _settingService.ClearCache();

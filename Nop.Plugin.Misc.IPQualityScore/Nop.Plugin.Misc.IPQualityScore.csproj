@@ -11,12 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Areas\Admin\ddd\**" />
-    <EmbeddedResource Remove="Areas\Admin\ddd\**" />
-    <None Remove="Areas\Admin\ddd\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="Areas\Admin\Views\Configure.cshtml" />
     <None Remove="Areas\Admin\Views\_ViewImports.cshtml" />
     <None Remove="logo.jpg" />

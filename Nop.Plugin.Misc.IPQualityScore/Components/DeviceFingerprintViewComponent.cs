@@ -40,7 +40,8 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
             var model = new DeviceFingerprintModel
             {
                 TrackingCode = _iPQualityScoreSettings.DeviceFingerprintTrackingCode,
-                FraudChance = _iPQualityScoreSettings.DeviceFingerprintFraudChance
+                FraudChance = _iPQualityScoreSettings.DeviceFingerprintFraudChance,
+                BlockUserIfScriptIsBlocked = _iPQualityScoreSettings.BlockUserIfScriptIsBlocked,
             };
 
             return View("~/Plugins/Misc.IPQualityScore/Views/DeviceFingerprint.cshtml", model);

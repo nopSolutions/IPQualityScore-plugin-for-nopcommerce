@@ -19,6 +19,11 @@ namespace Nop.Plugin.Misc.IPQualityScore.Models
         /// </summary>
         public int FraudChance { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to block the user if script is blocked by that user
+        /// </summary>
+        public bool BlockUserIfScriptIsBlocked { get; set; }
+
         #endregion
     }
 }

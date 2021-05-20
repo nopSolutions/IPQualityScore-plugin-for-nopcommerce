@@ -45,7 +45,7 @@ namespace Nop.Plugin.Misc.IPQualityScore
             "CustomerChangePassword",
             "Register",
             "Login",
-            "Checkout",
+            "CheckoutConfirm",
             "CheckoutOnePage"
         };
 
