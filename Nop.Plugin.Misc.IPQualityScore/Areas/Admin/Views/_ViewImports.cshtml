@@ -5,8 +5,14 @@
 
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
 @using System.Text.Encodings.Web
+
+@using Nop.Core
+@using Nop.Services.Common
 @using Nop.Web.Framework.Mvc.Razor
 @using Nop.Web.Framework.UI
 @using Nop.Web.Framework.Extensions
 
 @using Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
+
+@inject IGenericAttributeService genericAttributeService
+@inject IWorkContext workContext

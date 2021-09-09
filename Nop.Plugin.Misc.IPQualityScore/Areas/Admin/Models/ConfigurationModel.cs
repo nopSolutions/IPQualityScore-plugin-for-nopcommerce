@@ -86,6 +86,30 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
         public bool AllowCrawlers { get; set; }
         public bool AllowCrawlers_OverrideForStore { get; set; }
 
+        /// <summary>
+        /// Gets or sets a group IDs to check IP quality.
+        /// </summary>
+        [NopResourceDisplayName("Plugins.Misc.IPQualityScore.Fields.IPQualityGroupIds")]
+        public IList<int> IPQualityGroupIds { get; set; }
+        public bool IPQualityGroupIds_OverrideForStore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the available group system names to check IP quality.
+        /// </summary>
+        public IList<SelectListItem> AvailableIPQualityGroupIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets a IP block notification type
+        /// </summary>
+        [NopResourceDisplayName("Plugins.Misc.IPQualityScore.Fields.IPBlockNotificationTypeId")]
+        public int IPBlockNotificationTypeId { get; set; }
+        public bool IPBlockNotificationTypeId_OverrideForStore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the available IP block notification types
+        /// </summary>
+        public IList<SelectListItem> AvailableIPBlockNotificationTypes { get; set; }
+
         #region Order scoring
 
         /// <summary>
@@ -153,13 +177,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
         public bool EmailReputationFraudScoreForBlocking_OverrideForStore { get; set; }
 
         /// <summary>
-        /// Gets or sets the strictness. How strictly spam traps and honeypots are detected by our system, depending on how comfortable you are with identifying emails suspected of being a spam trap. 0 is the lowest level which will only return spam traps with high confidence. Strictness levels above 0 will return increasingly more strict results, with level 2 providing the greatest detection rates.
-        /// </summary>
-        [NopResourceDisplayName("Plugins.Misc.IPQualityScore.Fields.EmailReputationStrictness")]
-        public int EmailReputationStrictness { get; set; }
-        public bool EmailReputationStrictness_OverrideForStore { get; set; }
-
-        /// <summary>
         /// Gets or sets the strictness level for machine learning pattern recognition of abusive email addresses with the "recent_abuse" data point. Default level of 0 provides good coverage, however if you are filtering account applications and facing advanced fraudsters then we recommend increasing this value to level 1 or 2.
         /// </summary>
         [NopResourceDisplayName("Plugins.Misc.IPQualityScore.Fields.AbuseStrictness")]
@@ -198,6 +215,13 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
         public bool BlockUserIfScriptIsBlocked { get; set; }
         public bool BlockUserIfScriptIsBlocked_OverrideForStore { get; set; }
 
+        /// <summary>
+        /// Gets or sets the user ID variable name to track fingerprint on server side
+        /// </summary>
+        [NopResourceDisplayName("Plugins.Misc.IPQualityScore.Fields.UserIdVariableName")]
+        public string UserIdVariableName { get; set; }
+        public bool UserIdVariableName_OverrideForStore { get; set; }
+
         #endregion
 
         #endregion
@@ -207,6 +231,8 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
         public ConfigurationModel()
         {
             AvailableOrderStatuses = new List<SelectListItem>();
+            AvailableIPQualityGroupIds = new List<SelectListItem>();
+            AvailableIPBlockNotificationTypes = new List<SelectListItem>();
         }
 
         #endregion

@@ -1,0 +1,37 @@
+﻿@model OrderFraudInformationModel
+
+@{ 
+    const string hideOrderFraudInformationBlockAttributeName = "IPQualityScore.HideOrderFraudInformationBlock";
+    var hideOrderFraudInformationBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideOrderFraudInformationBlockAttributeName);
+}
+
+<nop-panel asp-name="ipqualityscore-order-fraud-information" asp-icon="fa fa-shield" asp-title="@T("Plugins.Misc.IPQualityScore.OrderFraudInformation")" asp-hide-block-attribute-name="@hideOrderFraudInformationBlockAttributeName" asp-hide="@hideOrderFraudInformationBlock" asp-advanced="true">
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <p>
+                    @T("Plugins.Misc.IPQualityScore.OrderFraudInformation.Note")
+                </p>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        <nop-label asp-for="RiskScore" />
+                    </div>
+                    <div class="col-md-7">
+                        <div class="form-text-row">@Model.RiskScore</div>
+                    </div>
+                </div>
+                @if (Model.FraudChance.HasValue)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            <nop-label asp-for="FraudChance" />
+                        </div>
+                        <div class="col-md-7">
+                            <div class="form-text-row">@Model.FraudChance</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</nop-panel>

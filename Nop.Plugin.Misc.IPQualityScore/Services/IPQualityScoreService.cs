@@ -6,6 +6,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Newtonsoft.Json;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Infrastructure;
@@ -29,6 +30,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         private readonly IAddressService _addressService;
         private readonly ICountryService _countryService;
         private readonly ICustomerService _customerService;
+        private readonly IGenericAttributeService _genericAttributeService;
         private readonly IOrderService _orderService;
         private readonly IOrderProcessingService _orderProcessingService;
         private readonly IPQualityScoreApi _iPQualityScoreApi;
@@ -48,6 +50,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             IAddressService addressService,
             ICountryService countryService,
             ICustomerService customerService,
+            IGenericAttributeService genericAttributeService,
             IOrderService orderService,
             IOrderProcessingService orderProcessingService,
             IPQualityScoreApi iPQualityScoreApi,
@@ -62,6 +65,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             _addressService = addressService;
             _countryService = countryService;
             _customerService = customerService;
+            _genericAttributeService = genericAttributeService;
             _orderService = orderService;
             _orderProcessingService = orderProcessingService;
             _iPQualityScoreApi = iPQualityScoreApi;
@@ -83,50 +87,28 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         /// </summary>
         /// <param name="actionContext">The action context.</param>
         /// <returns>The value indicating whether to the request can be validated using IPQS.</returns>
-        public virtual bool CanValidateRequest(ActionContext actionContext)
+        public virtual bool CanValidateIPReputation(ActionContext actionContext)
         {
             if (actionContext is null)
                 throw new ArgumentNullException(nameof(actionContext));
 
-            var customer = _workContext.CurrentCustomer;
-            if (customer.IsSystemAccount)
-            {
-                if (!_userAgentHelper.IsSearchEngine())
-                    return false;
-                else
-                {
-                    if (_iPQualityScoreSettings.AllowCrawlers)
-                        return false;
-                }
-            }
-
-            if (_workContext.IsAdmin)
-                return false;
-
-            if (!actionContext.ModelState.IsValid)
-            {
-                // don't validate invalid post actions
-                return false;
-            }
-
-            var routeName = GetCurrentRouteName(actionContext.HttpContext);
-            if (routeName == Defaults.PreventFraudRouteName)
-                return false;
-
-            var ipAddress = _webHelper.GetCurrentIpAddress();
-            if (string.IsNullOrEmpty(ipAddress) || ipAddress.Equals("127.0.0.1"))
-                return false;
-
-            if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
+            if (!CanValidateRequestIP(actionContext.HttpContext))
                 return false;
 
             if (!_iPQualityScoreSettings.IPReputationEnabled)
                 return false;
 
-            if (_customerService.IsAdmin(customer))
-                return false;
+            if (_iPQualityScoreSettings.IPQualityGroupIds?.Any() == true)
+            {
+                var routeName = GetCurrentRouteName(actionContext.HttpContext);
+                var availableRouteNames = Defaults.IPQualityGroups.All
+                    .Where(g => _iPQualityScoreSettings.IPQualityGroupIds.Contains(g.Id))
+                    .SelectMany(g => g.RouteNames);
 
-            return IsConfigured();
+                return availableRouteNames.Contains(routeName);
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -156,10 +138,16 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             if (order is null)
                 throw new ArgumentNullException(nameof(order));
 
+            if (actionContext is null)
+                throw new ArgumentNullException(nameof(actionContext));
+
+            if (!CanValidateRequestIP(actionContext.HttpContext))
+                return false;
+
             if (!_iPQualityScoreSettings.OrderScoringEnabled)
                 return false;
 
-            return CanValidateRequest(actionContext);
+            return true;
         }
 
         /// <summary>
@@ -178,6 +166,25 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
 
             var query = GetIpReputationTransactionQuery(order, actionContext.HttpContext);
             var response = await GetIPReputationAsync(query);
+
+            var orderFraudInformationModel = new OrderFraudInformationModel
+            {
+                RiskScore = response?.TransactionDetails?.RiskScore ?? 0
+            };
+
+            if (!string.IsNullOrEmpty(_iPQualityScoreSettings.UserIdVariableName))
+            {
+                var deviceFingerprintResponse = await _iPQualityScoreApi.LookupRequestAsync(new Dictionary<string, string>()
+                {
+                    [_iPQualityScoreSettings.UserIdVariableName] = _workContext.CurrentCustomer.Id.ToString(),
+                    ["type"] = "devicetracker",
+                });
+                if (deviceFingerprintResponse?.Success == true)
+                    orderFraudInformationModel.FraudChance = deviceFingerprintResponse.FraudChance;
+            }
+
+            var payload = JsonConvert.SerializeObject(orderFraudInformationModel);
+            _genericAttributeService.SaveAttribute(order, Defaults.OrderFraudInformationAttributeName, payload);
 
             return IsValidTransactionalResponse(response);
         }
@@ -229,27 +236,20 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
                 return false;
             }
 
-            var routeName = GetCurrentRouteName(actionContext.HttpContext);
-            if (routeName == Defaults.PreventFraudRouteName)
+            if (!CanValidateRequest(actionContext.HttpContext))
                 return false;
 
+            var routeName = GetCurrentRouteName(actionContext.HttpContext);
             if (!Defaults.EmailValidationRouteNames.Contains(routeName))
                 return false;
 
             if (!actionContext.HttpContext.Request.Form.TryGetValue("Email", out var email))
                 return false;
 
-            if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
-                return false;
-
             if (!_iPQualityScoreSettings.EmailValidationEnabled)
                 return false;
 
-            var customer = _workContext.CurrentCustomer;
-            if (customer.IsSystemAccount || _customerService.IsAdmin(customer))
-                return false;
-
-            if (customer.Email == email)
+            if (_workContext.CurrentCustomer.Email == email)
                 return false;
 
             return IsConfigured();
@@ -271,7 +271,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             var query = new Dictionary<string, string>()
             {
                 ["timeout"] = _iPQualityScoreSettings.EmailReputationTimeout.ToString(),
-                ["strictness"] = _iPQualityScoreSettings.EmailReputationStrictness.ToString(),
                 ["abuse_strictness"] = _iPQualityScoreSettings.AbuseStrictness.ToString(),
             };
 
@@ -294,7 +293,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
 
             var isFraud = response.FraudScore >= _iPQualityScoreSettings.EmailReputationFraudScoreForBlocking;
 
-            return response.Success && response.Valid && !response.Disposable && !isFraud && !response.RecentAbuse;
+            return response.Success && response.Valid && !response.Disposable && !isFraud;
         }
 
         /// <summary>
@@ -307,24 +306,17 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             if (httpContext is null)
                 throw new ArgumentNullException(nameof(httpContext));
 
-            if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
+            if (!CanValidateRequest(httpContext))
                 return false;
 
             if (!_iPQualityScoreSettings.DeviceFingerprintEnabled)
                 return false;
 
             var routeName = GetCurrentRouteName(httpContext);
-            if (routeName == Defaults.PreventFraudRouteName)
-                return false;
-
             if (!Defaults.DeviceFingerprintRouteNames.Contains(routeName))
                 return false;
 
-            var customer = _workContext.CurrentCustomer;
-            if (customer.IsSystemAccount || _customerService.IsAdmin(customer))
-                return false;
-
-            return IsConfigured();
+            return true;
         }
 
         #endregion
@@ -350,14 +342,13 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
 
         private IDictionary<string, string> GetIpReputationQuery(HttpContext httpContext)
         {
-            var language = _workContext.WorkingLanguage;
             var query = new Dictionary<string, string>()
             {
                 ["mobile"] = _userAgentHelper.IsMobileDevice().ToString(),
                 ["strictness"] = _iPQualityScoreSettings.IPReputationStrictness.ToString(),
                 ["allow_public_access_points"] = _iPQualityScoreSettings.AllowPublicAccessPoints.ToString(),
                 ["lighter_penalties"] = _iPQualityScoreSettings.LighterPenalties.ToString(),
-                ["user_language"] = language.LanguageCulture
+                ["user_language"] = _workContext.WorkingLanguage.LanguageCulture
             };
 
             if (httpContext.Request.Headers.TryGetValue("User-Agent", out var userAgentRaw))
@@ -418,7 +409,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
                 return true;
             }
 
-            var isAbuseVelocity = response.AbuseVelocity?.Equals("high", StringComparison.InvariantCultureIgnoreCase) == true;
             var isProxy = _iPQualityScoreSettings.ProxyBlockingEnabled && response.IsProxy;
             var isVpn = _iPQualityScoreSettings.VpnBlockingEnabled && response.IsVpn;
             var isTor = _iPQualityScoreSettings.TorBlockingEnabled && response.IsTor;
@@ -427,30 +417,14 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             if (_iPQualityScoreSettings.AllowCrawlers && response.IsCrawler)
                 return response.Success;
 
-            return response.Success && !isFraud && !isAbuseVelocity && !isProxy && !isVpn && !isTor;
+            return response.Success && !isFraud && !isProxy && !isVpn && !isTor;
         }
 
         private bool IsValidTransactionalResponse(IPReputationResponse response)
         {
             var isValidRequest = IsValidResponse(response);
             if (isValidRequest && response?.TransactionDetails != null)
-            {
-                var details = response.TransactionDetails;
-
-                var isValidBillingEmail = !details.ValidBillingEmail.HasValue || details.ValidBillingEmail.Value;
-                var isValidBillingPhone = !details.ValidBillingPhone.HasValue || details.ValidBillingPhone.Value;
-                var isValidBillingPhoneCountry = !details.BillingPhoneCountry.HasValue || details.BillingPhoneCountry.Value;
-                var isValidBillingData = isValidBillingEmail && isValidBillingPhone && isValidBillingPhoneCountry;
-
-                var isValidShippingEmail = !details.ValidShippingEmail.HasValue || details.ValidShippingEmail.Value;
-                var isValidShippingPhone = !details.ValidShippingPhone.HasValue || details.ValidShippingPhone.Value;
-                var isValidShippingPhoneCountry = !details.ShippingPhoneCountry.HasValue || details.ShippingPhoneCountry.Value;
-                var isValidShippingData = isValidShippingEmail && isValidShippingPhone && isValidShippingPhoneCountry;
-
-                var isFraud = details.RiskScore >= _iPQualityScoreSettings.RiskScoreForBlocking;
-
-                return !isFraud && isValidBillingData && isValidShippingData;
-            }
+                return response.TransactionDetails.RiskScore < _iPQualityScoreSettings.RiskScoreForBlocking;
 
             return isValidRequest;
         }
@@ -472,6 +446,44 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
                 .GetMetadata<RouteNameMetadata>()?.RouteName;
         }
 
+        private bool CanValidateRequestIP(HttpContext httpContext)
+        {
+            if (_workContext.CurrentCustomer.IsSystemAccount)
+            {
+                if (!_userAgentHelper.IsSearchEngine())
+                    return false;
+                else
+                {
+                    if (_iPQualityScoreSettings.AllowCrawlers)
+                        return false;
+                }
+            }
+
+            return CanValidateRequest(httpContext);
+        }
+
+        private bool CanValidateRequest(HttpContext httpContext)
+        {
+            if (_workContext.IsAdmin)
+                return false;
+
+            var routeName = GetCurrentRouteName(httpContext);
+            if (routeName == Defaults.PreventFraudRouteName)
+                return false;
+
+            var ipAddress = _webHelper.GetCurrentIpAddress();
+            if (string.IsNullOrEmpty(ipAddress) || ipAddress.Equals("127.0.0.1"))
+                return false;
+
+            if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
+                return false;
+
+            if (_customerService.IsAdmin(_workContext.CurrentCustomer))
+                return false;
+
+            return IsConfigured();
+        }
+
         private bool IsConfigured()
         {
             var validator = EngineContext.Current.Resolve<IValidator<ConfigurationModel>>();
@@ -486,7 +498,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
                 OrderScoringEnabled = _iPQualityScoreSettings.OrderScoringEnabled,
                 EmailValidationEnabled = _iPQualityScoreSettings.EmailValidationEnabled,
                 EmailReputationFraudScoreForBlocking = _iPQualityScoreSettings.EmailReputationFraudScoreForBlocking,
-                EmailReputationStrictness = _iPQualityScoreSettings.EmailReputationStrictness,
                 AbuseStrictness = _iPQualityScoreSettings.AbuseStrictness,
                 DeviceFingerprintEnabled = _iPQualityScoreSettings.DeviceFingerprintEnabled,
                 DeviceFingerprintFraudChance = _iPQualityScoreSettings.DeviceFingerprintFraudChance,

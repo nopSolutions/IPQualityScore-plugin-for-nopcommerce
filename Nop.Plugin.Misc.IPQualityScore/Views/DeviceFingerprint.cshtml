@@ -2,18 +2,25 @@
 
 @Html.Raw(Model.TrackingCode)
 
-<script>
+<script asp-location="Footer">
     if (typeof Startup !== "undefined") {
+        @if (!string.IsNullOrEmpty(Model.UserIdVariableName))
+        {
+            <text>
+                Startup.Store('@Model.UserIdVariableName', '@Model.UserId');
+            </text>
+        }
+
         Startup.AfterResult(function (result) {
             if (result.fraud_chance >= @Model.FraudChance) {
-                window.location.href = '@Url.Action("PreventFraud", "IPQualityScore")';
+                fraudDetected();
             }
         });
 
         Startup.AfterFailure(function () {
             // user has blocked the second JavaScript call
             // can redirect or perform other business logic if JS is not loaded
-            window.location.href = '@Url.Action("PreventFraud", "IPQualityScore")';
+            fraudDetected();
         });
     }
     else {
@@ -22,7 +29,22 @@
             // user has blocked the initial JavaScript call
             // can redirect or perform other business logic if JS is not loaded
             <text>
+                fraudDetected();
+            </text>
+        }
+    }
+
+    function fraudDetected() {
+        @if (Model.IPBlockNotificationType == IPBlockNotificationType.RedirectToBlockPage)
+        {
+            <text>
                 window.location.href = '@Url.Action("PreventFraud", "IPQualityScore")';
+            </text>
+        }
+        else
+        {
+            <text>
+                displayPopupNotification('@T("Plugins.Misc.IPQualityScore.PreventFraudPage.Content")', 'warning');
             </text>
         }
     }

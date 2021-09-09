@@ -1,4 +1,6 @@
-﻿using Nop.Core.Configuration;
+﻿using System.Collections.Generic;
+using Nop.Core.Configuration;
+using Nop.Plugin.Misc.IPQualityScore.Domain;
 
 namespace Nop.Plugin.Misc.IPQualityScore
 {
@@ -14,12 +16,12 @@ namespace Nop.Plugin.Misc.IPQualityScore
         /// </summary>
         public bool LogRequestErrors { get; set; }
 
-        #region IP Reputation
-
         /// <summary>
         /// Gets or sets the key to sign the API requests
         /// </summary>
         public string ApiKey { get; set; }
+
+        #region IP Reputation
 
         /// <summary>
         /// Gets or sets a value indicating whether to the IP Reputation service is enabled
@@ -65,6 +67,16 @@ namespace Nop.Plugin.Misc.IPQualityScore
         /// Gets or sets a value indicating whether to skip validation for crawlers
         /// </summary>
         public bool AllowCrawlers { get; set; }
+
+        /// <summary>
+        /// Gets or sets a group IDs to check IP quality.
+        /// </summary>
+        public List<int> IPQualityGroupIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets a IP block notification type
+        /// </summary>
+        public IPBlockNotificationType IPBlockNotificationType { get; set; }
 
         #region Order scoring
 
@@ -115,11 +127,6 @@ namespace Nop.Plugin.Misc.IPQualityScore
         public double EmailReputationFraudScoreForBlocking { get; set; }
 
         /// <summary>
-        /// Gets or sets the strictness. How strictly spam traps and honeypots are detected by our system, depending on how comfortable you are with identifying emails suspected of being a spam trap. 0 is the lowest level which will only return spam traps with high confidence. Strictness levels above 0 will return increasingly more strict results, with level 2 providing the greatest detection rates.
-        /// </summary>
-        public int EmailReputationStrictness { get; set; }
-
-        /// <summary>
         /// Gets or sets the strictness level for machine learning pattern recognition of abusive email addresses with the "recent_abuse" data point. Default level of 0 provides good coverage, however if you are filtering account applications and facing advanced fraudsters then we recommend increasing this value to level 1 or 2.
         /// </summary>
         public int AbuseStrictness { get; set; }
@@ -152,6 +159,11 @@ namespace Nop.Plugin.Misc.IPQualityScore
         /// Gets or sets a value indicating whether to block the user if script is blocked by that user
         /// </summary>
         public bool BlockUserIfScriptIsBlocked { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user ID variable name to track fingerprint on server side
+        /// </summary>
+        public string UserIdVariableName { get; set; }
 
         #endregion
 

@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models;
+using Nop.Plugin.Misc.IPQualityScore.Domain;
 using Nop.Services;
 using Nop.Services.Configuration;
 using Nop.Services.Localization;
@@ -82,7 +85,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
                 RejectStatusId = iPQualityScoreSettings.RejectStatusId,
                 EmailValidationEnabled = iPQualityScoreSettings.EmailValidationEnabled,
                 EmailReputationFraudScoreForBlocking = iPQualityScoreSettings.EmailReputationFraudScoreForBlocking,
-                EmailReputationStrictness = iPQualityScoreSettings.EmailReputationStrictness,
                 AbuseStrictness = iPQualityScoreSettings.AbuseStrictness,
                 DeviceFingerprintEnabled = iPQualityScoreSettings.DeviceFingerprintEnabled,
                 DeviceFingerprintTrackingCode = iPQualityScoreSettings.DeviceFingerprintTrackingCode,
@@ -90,11 +92,25 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
                 AllowCrawlers = iPQualityScoreSettings.AllowCrawlers,
                 BlockUserIfScriptIsBlocked = iPQualityScoreSettings.BlockUserIfScriptIsBlocked,
                 InformCustomerAboutFraud = iPQualityScoreSettings.InformCustomerAboutFraud,
+                UserIdVariableName = iPQualityScoreSettings.UserIdVariableName,
+                IPQualityGroupIds = iPQualityScoreSettings.IPQualityGroupIds,
+                IPBlockNotificationTypeId = (int)iPQualityScoreSettings.IPBlockNotificationType,
             };
 
             var orderStatusItems = OrderStatus.Pending.ToSelectList(false);
             foreach (var statusItem in orderStatusItems)
                 model.AvailableOrderStatuses.Add(statusItem);
+
+            model.AvailableIPQualityGroupIds.Add(new SelectListItem(
+                _localizationService.GetResource("Plugins.Misc.IPQualityScore.IPQualityGroups.Customer"), Defaults.IPQualityGroups.Customer.Id.ToString()));
+            model.AvailableIPQualityGroupIds.Add(new SelectListItem(
+                _localizationService.GetResource("Plugins.Misc.IPQualityScore.IPQualityGroups.Catalog"), Defaults.IPQualityGroups.Catalog.Id.ToString()));
+            model.AvailableIPQualityGroupIds.Add(new SelectListItem(
+                _localizationService.GetResource("Plugins.Misc.IPQualityScore.IPQualityGroups.Checkout"), Defaults.IPQualityGroups.Checkout.Id.ToString()));
+
+            var iPBlockNotificationTypeItems = IPBlockNotificationType.DisplayNotification.ToSelectList(false);
+            foreach (var iPBlockNotificationTypeItem in iPBlockNotificationTypeItems)
+                model.AvailableIPBlockNotificationTypes.Add(iPBlockNotificationTypeItem);
 
             if (storeScope > 0)
             {
@@ -114,7 +130,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
                 model.RejectStatusId_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.RejectStatusId, storeScope);
                 model.EmailValidationEnabled_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.EmailValidationEnabled, storeScope);
                 model.EmailReputationFraudScoreForBlocking_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.EmailReputationFraudScoreForBlocking, storeScope);
-                model.EmailReputationStrictness_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.EmailReputationStrictness, storeScope);
                 model.AbuseStrictness_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.AbuseStrictness, storeScope);
                 model.DeviceFingerprintEnabled_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.DeviceFingerprintEnabled, storeScope);
                 model.DeviceFingerprintTrackingCode_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.DeviceFingerprintTrackingCode, storeScope);
@@ -122,6 +137,9 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
                 model.AllowCrawlers_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.AllowCrawlers, storeScope);
                 model.BlockUserIfScriptIsBlocked_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.BlockUserIfScriptIsBlocked, storeScope);
                 model.InformCustomerAboutFraud_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.InformCustomerAboutFraud, storeScope);
+                model.UserIdVariableName_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.UserIdVariableName, storeScope);
+                model.IPQualityGroupIds_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.IPQualityGroupIds, storeScope);
+                model.IPBlockNotificationTypeId_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.IPBlockNotificationType, storeScope);
             }
 
             return View("~/Plugins/Misc.IPQualityScore/Areas/Admin/Views/Configure.cshtml", model);
@@ -162,7 +180,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
             iPQualityScoreSettings.RejectStatusId = model.RejectStatusId;
             iPQualityScoreSettings.EmailValidationEnabled = model.EmailValidationEnabled;
             iPQualityScoreSettings.EmailReputationFraudScoreForBlocking = model.EmailReputationFraudScoreForBlocking;
-            iPQualityScoreSettings.EmailReputationStrictness = model.EmailReputationStrictness;
             iPQualityScoreSettings.AbuseStrictness = model.AbuseStrictness;
             iPQualityScoreSettings.DeviceFingerprintEnabled = model.DeviceFingerprintEnabled;
             iPQualityScoreSettings.DeviceFingerprintTrackingCode = model.DeviceFingerprintTrackingCode;
@@ -170,6 +187,9 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
             iPQualityScoreSettings.AllowCrawlers = model.AllowCrawlers;
             iPQualityScoreSettings.BlockUserIfScriptIsBlocked = model.BlockUserIfScriptIsBlocked;
             iPQualityScoreSettings.InformCustomerAboutFraud = model.InformCustomerAboutFraud;
+            iPQualityScoreSettings.UserIdVariableName = model.UserIdVariableName;
+            iPQualityScoreSettings.IPQualityGroupIds = model.IPQualityGroupIds?.ToList();
+            iPQualityScoreSettings.IPBlockNotificationType = (IPBlockNotificationType)model.IPBlockNotificationTypeId;
 
             /* We do not clear cache after each setting update.
              * This behavior can increase performance because cached settings will not be cleared 
@@ -190,7 +210,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.RejectStatusId, model.RejectStatusId_OverrideForStore, storeScope, false);
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.EmailValidationEnabled, model.EmailValidationEnabled_OverrideForStore, storeScope, false);
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.EmailReputationFraudScoreForBlocking, model.EmailReputationFraudScoreForBlocking_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.EmailReputationStrictness, model.EmailReputationStrictness_OverrideForStore, storeScope, false);
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.AbuseStrictness, model.AbuseStrictness_OverrideForStore, storeScope, false);
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.DeviceFingerprintEnabled, model.DeviceFingerprintEnabled_OverrideForStore, storeScope, false);
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.DeviceFingerprintTrackingCode, model.DeviceFingerprintTrackingCode_OverrideForStore, storeScope, false);
@@ -198,6 +217,9 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.AllowCrawlers, model.AllowCrawlers_OverrideForStore, storeScope, false);
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.BlockUserIfScriptIsBlocked, model.BlockUserIfScriptIsBlocked_OverrideForStore, storeScope, false);
             _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.InformCustomerAboutFraud, model.InformCustomerAboutFraud_OverrideForStore, storeScope, false);
+            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.UserIdVariableName, model.UserIdVariableName_OverrideForStore, storeScope, false);
+            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.IPQualityGroupIds, model.IPQualityGroupIds_OverrideForStore, storeScope, false);
+            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.IPBlockNotificationType, model.IPBlockNotificationTypeId_OverrideForStore, storeScope, false);
 
             //now clear settings cache
             _settingService.ClearCache();

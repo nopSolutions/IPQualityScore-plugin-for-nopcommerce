@@ -38,6 +38,11 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             return GetAsync<EmailReputationResponse>($"{Defaults.IPQualityScore.Api.Endpoints.EmailReputationPath}/{ApiKey}/{email}", queryString);
         }
 
+        public virtual Task<PostbackResponse> LookupRequestAsync(IDictionary<string, string> queryString = null)
+        {
+            return GetAsync<PostbackResponse>($"{Defaults.IPQualityScore.Api.Endpoints.LookupRequestPath}/{ApiKey}", queryString);
+        }
+
         #endregion
     }
 }

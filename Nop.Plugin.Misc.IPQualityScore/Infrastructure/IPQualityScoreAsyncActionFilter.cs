@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Nop.Core;
+using Nop.Plugin.Misc.IPQualityScore.Domain;
 using Nop.Plugin.Misc.IPQualityScore.Services;
 using Nop.Services.Localization;
 
@@ -14,6 +15,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
     {
         #region Fields
 
+        private readonly IPQualityScoreSettings _iPQualityScoreSettings;
         private readonly IPQualityScoreService _iPQualityScoreService;
         private readonly ILocalizationService _localizationService;
         private readonly IWebHelper _webHelper;
@@ -23,10 +25,12 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
         #region Ctor
 
         public IPQualityScoreAsyncActionFilter(
+            IPQualityScoreSettings iPQualityScoreSettings,
             IPQualityScoreService iPQualityScoreService,
             ILocalizationService localizationService,
             IWebHelper webHelper)
         {
+            _iPQualityScoreSettings = iPQualityScoreSettings;
             _iPQualityScoreService = iPQualityScoreService;
             _localizationService = localizationService;
             _webHelper = webHelper;
@@ -44,13 +48,18 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
         /// <returns>The <see cref="Task"/> that on completion indicates the filter has executed.</returns>
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            if (_iPQualityScoreService.CanValidateRequest(context))
+            if (_iPQualityScoreService.CanValidateIPReputation(context))
             {
                 var isValid = await _iPQualityScoreService.ValidateRequestAsync(context);
                 if (!isValid)
                 {
-                    context.Result = GeneratePreventFraudResult(context);
-                    return;
+                    if (_iPQualityScoreSettings.IPBlockNotificationType == IPBlockNotificationType.DisplayNotification)
+                        context.HttpContext.Items.Add(Defaults.IPQualityResultId, string.Empty);
+                    else
+                    {
+                        context.Result = GeneratePreventFraudResult(context);
+                        return;
+                    }
                 }
             }
 
@@ -59,8 +68,13 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
                 var isValid = await _iPQualityScoreService.ValidateEmailForRequestAsync(context);
                 if (!isValid)
                 {
-                    context.Result = GeneratePreventFraudResult(context);
-                    return;
+                    if (_iPQualityScoreSettings.IPBlockNotificationType == IPBlockNotificationType.DisplayNotification)
+                        context.HttpContext.Items.Add(Defaults.IPQualityResultId, string.Empty);
+                    else
+                    {
+                        context.Result = GeneratePreventFraudResult(context);
+                        return;
+                    }
                 }
             }
 

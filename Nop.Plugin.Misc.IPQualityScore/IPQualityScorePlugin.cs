@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Nop.Core.Domain.Cms;
 using Nop.Core.Domain.Orders;
+using Nop.Plugin.Misc.IPQualityScore.Domain;
 using Nop.Services.Cms;
 using Nop.Services.Common;
 using Nop.Services.Configuration;
@@ -71,6 +72,12 @@ namespace Nop.Plugin.Misc.IPQualityScore
             if (widgetZone.Equals(PublicWidgetZones.BodyStartHtmlTagAfter))
                 return Defaults.DEVICE_FINGERPRINT_VIEW_COMPONENT_NAME;
 
+            if (widgetZone.Equals(AdminWidgetZones.OrderDetailsBlock))
+                return Defaults.ORDER_FRAUD_INFORMATION_VIEW_COMPONENT_NAME;
+
+            if (widgetZone.Equals(PublicWidgetZones.BodyEndHtmlTagBefore))
+                return Defaults.IP_RESULT_INFORMATION_VIEW_COMPONENT_NAME;
+
             return string.Empty;
         }
 
@@ -82,7 +89,9 @@ namespace Nop.Plugin.Misc.IPQualityScore
         {
             return new List<string>
             {
-                PublicWidgetZones.BodyStartHtmlTagAfter
+                PublicWidgetZones.BodyStartHtmlTagAfter,
+                PublicWidgetZones.BodyEndHtmlTagBefore,
+                AdminWidgetZones.OrderDetailsBlock
             };
         }
 
@@ -117,6 +126,7 @@ namespace Nop.Plugin.Misc.IPQualityScore
                 AllowPublicAccessPoints = true,
                 LighterPenalties = true,
                 AllowCrawlers = true,
+                IPBlockNotificationType = IPBlockNotificationType.DisplayNotification,
 
                 // Order Scoring
                 OrderScoringEnabled = true,
@@ -129,12 +139,12 @@ namespace Nop.Plugin.Misc.IPQualityScore
                 // Email reputation
                 EmailValidationEnabled = true,
                 EmailReputationFraudScoreForBlocking = 85,
-                EmailReputationStrictness = 0,
                 AbuseStrictness = 0,
                 EmailReputationTimeout = 20,
 
                 // Device fingerprint
-                DeviceFingerprintFraudChance = 85
+                DeviceFingerprintFraudChance = 85,
+                UserIdVariableName = "userID",
             });
 
             if (!_widgetSettings.ActiveWidgetSystemNames.Contains(Defaults.SystemName))
@@ -148,8 +158,7 @@ namespace Nop.Plugin.Misc.IPQualityScore
             {
                 ["Plugins.Misc.IPQualityScore.DeviceFingerprint"] = "Device Fingerprint",
                 ["Plugins.Misc.IPQualityScore.EmailReputation"] = "Email Validation",
-                ["Plugins.Misc.IPQualityScore.IPReputation"] = "Proxy Detection & Fraud Prevention",
-                ["Plugins.Misc.IPQualityScore.IPReputation.OrderScoring"] = "Order Fraud Detection",
+                ["Plugins.Misc.IPQualityScore.UserAndTransactionScoring"] = "User, Payment, & Transaction Scoring",
                 ["Plugins.Misc.IPQualityScore.PreventFraudPage.Content"] = "Unfortunately we were unable to process this action. Please contact us if this error persists.",
                 ["Plugins.Misc.IPQualityScore.Order.MessageToCustomerWhenFraudIsDetected"] = "We detected fraudulent activity in relation to this order, so we changed the order status to '{0}'.",
                 ["Plugins.Misc.IPQualityScore.Fields.AbuseStrictness"] = "Abuse strictness",
@@ -177,9 +186,6 @@ namespace Nop.Plugin.Misc.IPQualityScore
                 ["Plugins.Misc.IPQualityScore.Fields.EmailReputationFraudScoreForBlocking"] = "Fraud score",
                 ["Plugins.Misc.IPQualityScore.Fields.EmailReputationFraudScoreForBlocking.Hint"] = "The overall Fraud Score of the user based on the email's reputation and recent behavior across the IPQS threat network. Scores are 0 - 100. Fraud Scores >= 75 are suspicious, but not necessarily fraudulent.",
                 ["Plugins.Misc.IPQualityScore.Fields.EmailReputationFraudScoreForBlocking.FromZeroToOneHundred"] = "The fraud score should be in range from 0 to 100.",
-                ["Plugins.Misc.IPQualityScore.Fields.EmailReputationStrictness"] = "Strictness",
-                ["Plugins.Misc.IPQualityScore.Fields.EmailReputationStrictness.Hint"] = "Sets how strictly spam traps and honeypots are detected by our system, depending on how comfortable you are with identifying emails suspected of being a spam trap. 0 is the lowest level which will only return spam traps with high confidence. Strictness levels above 0 will return increasingly more strict results, with level 2 providing the greatest detection rates.",
-                ["Plugins.Misc.IPQualityScore.Fields.EmailReputationStrictness.FromZeroToTwo"] = "The strictness should be in range from 0 to 2.",
                 ["Plugins.Misc.IPQualityScore.Fields.EmailValidationEnabled"] = "Enable the Email Validation",
                 ["Plugins.Misc.IPQualityScore.Fields.EmailValidationEnabled.Hint"] = "Check to enable the email validation on register and user account (info) pages.",
                 ["Plugins.Misc.IPQualityScore.Fields.IPReputationEnabled"] = "Enable the IP Reputation",
@@ -212,6 +218,19 @@ namespace Nop.Plugin.Misc.IPQualityScore
                 ["Plugins.Misc.IPQualityScore.Fields.BlockUserIfScriptIsBlocked.Hint"] = "Check to block user if the tracking code is blocked  by user. Blocked user will redirect to the prevent fraud page.",
                 ["Plugins.Misc.IPQualityScore.Fields.InformCustomerAboutFraud"] = "Inform the customer about fraud",
                 ["Plugins.Misc.IPQualityScore.Fields.InformCustomerAboutFraud.Hint"] = "Check to inform the customer about potential fraud in the order notes.",
+                ["Plugins.Misc.IPQualityScore.Fields.UserIdVariableName"] = "UserId variable name",
+                ["Plugins.Misc.IPQualityScore.Fields.UserIdVariableName.Hint"] = "Enter the UserId variable name from Custom Tracking Variables section of your IPQS account or leave empty if you don't want to get the device fingerprint result on order details page.",
+                ["Plugins.Misc.IPQualityScore.OrderFraudInformation"] = "IPQualityScore order fraud information",
+                ["Plugins.Misc.IPQualityScore.Fields.FraudChance"] = "Device Fingerprint score",
+                ["Plugins.Misc.IPQualityScore.Fields.RiskScore"] = "IP & Payment data score",
+                ["Plugins.Misc.IPQualityScore.Fields.IPQualityGroupIds"] = "Enable on pages",
+                ["Plugins.Misc.IPQualityScore.Fields.IPQualityGroupIds.Hint"] = "Select the pages where you want to enable the IP validation or leave empty to check on all pages.",
+                ["Plugins.Misc.IPQualityScore.Fields.IPBlockNotificationTypeId"] = "IP block notification type",
+                ["Plugins.Misc.IPQualityScore.Fields.IPBlockNotificationTypeId.Hint"] = "Select the IP block notification type for the customer.",
+                ["Plugins.Misc.IPQualityScore.OrderFraudInformation.Note"] = "Scores 85+ are considered very high risk. We recommend contacting the customer to verify the order for users that fall into this threshold.",
+                ["Plugins.Misc.IPQualityScore.IPQualityGroups.Customer"] = "Customer (login, register, account etc)",
+                ["Plugins.Misc.IPQualityScore.IPQualityGroups.Catalog"] = "Catalog",
+                ["Plugins.Misc.IPQualityScore.IPQualityGroups.Checkout"] = "Checkout",
             });
 
             base.Install();

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Nop.Core;
 using Nop.Plugin.Misc.IPQualityScore.Models;
 using Nop.Plugin.Misc.IPQualityScore.Services;
 using Nop.Web.Framework.Components;
@@ -15,6 +16,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
 
         private readonly IPQualityScoreSettings _iPQualityScoreSettings;
         private readonly IPQualityScoreService _iPQualityScoreService;
+        private readonly IWorkContext _workContext;
 
         #endregion
 
@@ -22,10 +24,13 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
 
         public DeviceFingerprintViewComponent(
             IPQualityScoreSettings iPQualityScoreSettings,
-            IPQualityScoreService iPQualityScoreService)
+            IPQualityScoreService iPQualityScoreService,
+            IWorkContext workContext
+        )
         {
             _iPQualityScoreSettings = iPQualityScoreSettings;
             _iPQualityScoreService = iPQualityScoreService;
+            _workContext = workContext;
         }
 
         #endregion
@@ -36,12 +41,14 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
         {
             if (!_iPQualityScoreService.CanDisplayDeviceFingerprint(HttpContext))
                 return Content(string.Empty);
-
+            
             var model = new DeviceFingerprintModel
             {
                 TrackingCode = _iPQualityScoreSettings.DeviceFingerprintTrackingCode,
                 FraudChance = _iPQualityScoreSettings.DeviceFingerprintFraudChance,
                 BlockUserIfScriptIsBlocked = _iPQualityScoreSettings.BlockUserIfScriptIsBlocked,
+                UserIdVariableName = _iPQualityScoreSettings.UserIdVariableName,
+                UserId = _workContext.CurrentCustomer.Id
             };
 
             return View("~/Plugins/Misc.IPQualityScore/Views/DeviceFingerprint.cshtml", model);

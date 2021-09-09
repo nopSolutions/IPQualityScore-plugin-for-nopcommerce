@@ -31,21 +31,16 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Validators
             RuleFor(model => model.TransactionStrictness)
                 .InclusiveBetween(0, 2)
                 .WithMessage(localizationService.GetResource("Plugins.Misc.IPQualityScore.Fields.TransactionStrictness.FromZeroToTwo"))
-                .When(model => model.IPReputationEnabled && model.OrderScoringEnabled);
+                .When(model => model.OrderScoringEnabled);
 
             RuleFor(model => model.RiskScoreForBlocking)
                 .InclusiveBetween(0, 100)
                 .WithMessage(localizationService.GetResource("Plugins.Misc.IPQualityScore.Fields.RiskScoreForBlocking.FromZeroToOneHundred"))
-                .When(model => model.IPReputationEnabled && model.OrderScoringEnabled);
+                .When(model => model.OrderScoringEnabled);
 
             RuleFor(model => model.EmailReputationFraudScoreForBlocking)
                 .InclusiveBetween(0, 100)
                 .WithMessage(localizationService.GetResource("Plugins.Misc.IPQualityScore.Fields.EmailReputationFraudScoreForBlocking.FromZeroToOneHundred"))
-                .When(model => model.EmailValidationEnabled);
-
-            RuleFor(model => model.EmailReputationStrictness)
-                .InclusiveBetween(0, 2)
-                .WithMessage(localizationService.GetResource("Plugins.Misc.IPQualityScore.Fields.EmailReputationStrictness.FromZeroToTwo"))
                 .When(model => model.EmailValidationEnabled);
 
             RuleFor(model => model.AbuseStrictness)
