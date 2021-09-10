@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <None Remove="Areas\Admin\Views\Configure.cshtml" />
-    <None Remove="Areas\Admin\Views\OrderFraudInfrormation.cshtml" />
+    <None Remove="Areas\Admin\Views\OrderFraudInformation.cshtml" />
     <None Remove="Areas\Admin\Views\_ViewImports.cshtml" />
     <None Remove="logo.jpg" />
 	  <None Remove="plugin.json" />
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Areas\Admin\Views\OrderFraudInfrormation.cshtml">
+    <Content Include="Areas\Admin\Views\OrderFraudInformation.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Areas\Admin\Views\Configure.cshtml">
@@ -49,7 +49,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Presentation\Nop.Web.Framework\Nop.Web.Framework.csproj" />
     <ProjectReference Include="..\..\Presentation\Nop.Web\Nop.Web.csproj" />
     <ClearPluginAssemblies Include="$(MSBuildProjectDirectory)\..\..\Build\ClearPluginAssemblies.proj" />
   </ItemGroup>

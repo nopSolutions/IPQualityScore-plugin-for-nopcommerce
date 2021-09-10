@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Nop.Core.Domain.Orders;
 using Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models;
 using Nop.Services.Cms;
 using Nop.Services.Common;
@@ -14,7 +13,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Components
     /// Represents a view component to display the IPQualityScore order fraud information in admin store
     /// </summary>
     [ViewComponent(Name = Defaults.ORDER_FRAUD_INFORMATION_VIEW_COMPONENT_NAME)]
-    public class OrderFraudInfrormationViewComponent : NopViewComponent
+    public class OrderFraudInformationViewComponent : NopViewComponent
     {
         #region Fields
 
@@ -26,7 +25,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Components
 
         #region Ctor
 
-        public OrderFraudInfrormationViewComponent(
+        public OrderFraudInformationViewComponent(
             IOrderService orderService,
             IGenericAttributeService genericAttributeService,
             IWidgetPluginManager widgetPluginManager

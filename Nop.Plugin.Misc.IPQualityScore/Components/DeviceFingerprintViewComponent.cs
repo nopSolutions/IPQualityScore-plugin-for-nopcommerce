@@ -48,7 +48,8 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
                 FraudChance = _iPQualityScoreSettings.DeviceFingerprintFraudChance,
                 BlockUserIfScriptIsBlocked = _iPQualityScoreSettings.BlockUserIfScriptIsBlocked,
                 UserIdVariableName = _iPQualityScoreSettings.UserIdVariableName,
-                UserId = _workContext.CurrentCustomer.Id
+                UserId = _workContext.CurrentCustomer.Id,
+                IPBlockNotificationType = _iPQualityScoreSettings.IPBlockNotificationType,
             };
 
             return View("~/Plugins/Misc.IPQualityScore/Views/DeviceFingerprint.cshtml", model);
