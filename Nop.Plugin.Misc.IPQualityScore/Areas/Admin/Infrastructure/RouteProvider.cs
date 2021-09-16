@@ -5,7 +5,7 @@ using Nop.Web.Framework.Mvc.Routing;
 
 namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Infrastructure
 {
-    public partial class RouteProvider : IRouteProvider
+    public class RouteProvider : IRouteProvider
     {
         /// <summary>
         /// Register routes

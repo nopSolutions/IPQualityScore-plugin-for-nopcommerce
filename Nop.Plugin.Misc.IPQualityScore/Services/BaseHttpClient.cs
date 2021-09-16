@@ -48,7 +48,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
 
         #region Methods
 
-        protected virtual async Task<TResponse> GetAsync<TResponse>(string requestUri, IDictionary<string, string> queryString = null, [CallerMemberName] string callerName = "")
+        protected async Task<TResponse> GetAsync<TResponse>(string requestUri, IDictionary<string, string> queryString = null, [CallerMemberName] string callerName = "")
         {
             if (queryString != null)
                 requestUri = QueryHelpers.AddQueryString(requestUri, queryString);
@@ -56,7 +56,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             return await CallAsync<TResponse>(() => HttpClient.GetAsync(requestUri), callerName);
         }
 
-        protected virtual async Task<TResponse> PostAsync<TResponse>(string requestUri, object request = null, [CallerMemberName] string callerName = "")
+        protected async Task<TResponse> PostAsync<TResponse>(string requestUri, object request = null, [CallerMemberName] string callerName = "")
         {
             HttpContent body = null;
             if (request != null)
@@ -68,7 +68,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             return await CallAsync<TResponse>(() => HttpClient.PostAsync(requestUri, body), callerName);
         }
 
-        protected virtual async Task<TResponse> CallAsync<TResponse>(Func<Task<HttpResponseMessage>> requestFunc, [CallerMemberName] string callerName = "")
+        protected async Task<TResponse> CallAsync<TResponse>(Func<Task<HttpResponseMessage>> requestFunc, [CallerMemberName] string callerName = "")
         {
             HttpResponseMessage response = null;
             try

@@ -28,10 +28,10 @@ namespace Nop.Plugin.Misc.IPQualityScore.Models
         public bool? ValidBillingPhone { get; set; }
 
         /// <summary>
-        /// Gets or sets the country associated with this phone number.
+        /// Gets or sets the physical address validation and reputation analysis.
         /// </summary>
-        [JsonProperty("billing_phone_country")]
-        public bool? BillingPhoneCountry { get; set; }
+        [JsonProperty("valid_billing_address")]
+        public bool? ValidBillingAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the abusive check and reputation analysis for the email address.
@@ -46,10 +46,10 @@ namespace Nop.Plugin.Misc.IPQualityScore.Models
         public bool? ValidShippingPhone { get; set; }
 
         /// <summary>
-        /// Gets or sets the country associated with this phone number.
+        /// Gets or sets the physical address validation and reputation analysis.
         /// </summary>
-        [JsonProperty("shipping_phone_country")]
-        public bool? ShippingPhoneCountry { get; set; }
+        [JsonProperty("valid_shipping_address")]
+        public bool? ValidShippingAddress { get; set; }
 
         #endregion
     }

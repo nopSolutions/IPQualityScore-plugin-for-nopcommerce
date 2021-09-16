@@ -37,7 +37,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
 
         #region Methods
 
-        public virtual IViewComponentResult Invoke()
+        public IViewComponentResult Invoke()
         {
             if (!_iPQualityScoreService.CanDisplayDeviceFingerprint(HttpContext))
                 return Content(string.Empty);

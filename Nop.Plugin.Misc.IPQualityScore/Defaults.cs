@@ -122,9 +122,14 @@ namespace Nop.Plugin.Misc.IPQualityScore
                 2,
                 new[]
                 {
-                    "ShoppingCart",
+                    "ProductDetails",
+                    "Category",
+                    "Manufacturer",
+                    "Vendor",
+                    "NewsItem",
+                    "BlogPost",
+                    "ProductsByTag",
                     "EstimateShipping",
-                    "Wishlist",
                     "ContactUs",
                     "Sitemap",
                     "Blog",
@@ -137,11 +142,8 @@ namespace Nop.Plugin.Misc.IPQualityScore
                     "ManufacturerList",
                     "VendorList",
                     "ProductReviews",
-                    "ProductReviews2",
                     "BlogByTag",
                     "BlogByMonth",
-                    "BlogRSS",
-                    "NewsRSS",
                     "ContactVendor",
                     "ApplyVendorAccount",
                     "NewsletterActivation",
@@ -156,6 +158,8 @@ namespace Nop.Plugin.Misc.IPQualityScore
                 3,
                 new[]
                 {
+                    "ShoppingCart",
+                    "Wishlist",
                     "Checkout",
                     "CheckoutOnePage",
                     "CheckoutShippingAddress",

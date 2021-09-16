@@ -14,20 +14,86 @@
                 </p>
                 <div class="form-group">
                     <div class="col-md-3">
-                        <nop-label asp-for="RiskScore" />
+                        <nop-label asp-for="PaymentRiskScore" />
                     </div>
                     <div class="col-md-7">
-                        <div class="form-text-row">@Model.RiskScore</div>
+                        <div class="form-text-row">@Model.PaymentRiskScore</div>
                     </div>
                 </div>
-                @if (Model.FraudChance.HasValue)
+                @if (Model.DeviceFingerprintRiskScore.HasValue)
                 {
                     <div class="form-group">
                         <div class="col-md-3">
-                            <nop-label asp-for="FraudChance" />
+                            <nop-label asp-for="DeviceFingerprintRiskScore" />
                         </div>
                         <div class="col-md-7">
-                            <div class="form-text-row">@Model.FraudChance</div>
+                            <div class="form-text-row">@Model.DeviceFingerprintRiskScore</div>
+                        </div>
+                    </div>
+                }
+                @if (Model.ValidBillingAddress.HasValue)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            <nop-label asp-for="ValidBillingAddress" />
+                        </div>
+                        <div class="col-md-7">
+                            <div class="form-text-row">@Model.ValidBillingAddress</div>
+                        </div>
+                    </div>
+                }
+                @if (Model.ValidBillingPhone.HasValue)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            <nop-label asp-for="ValidBillingPhone" />
+                        </div>
+                        <div class="col-md-7">
+                            <div class="form-text-row">@Model.ValidBillingPhone</div>
+                        </div>
+                    </div>
+                }
+                @if (Model.ValidBillingEmail.HasValue)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            <nop-label asp-for="ValidBillingEmail" />
+                        </div>
+                        <div class="col-md-7">
+                            <div class="form-text-row">@Model.ValidBillingEmail</div>
+                        </div>
+                    </div>
+                }
+                @if (Model.ValidShippingAddress.HasValue)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            <nop-label asp-for="ValidShippingAddress" />
+                        </div>
+                        <div class="col-md-7">
+                            <div class="form-text-row">@Model.ValidShippingAddress</div>
+                        </div>
+                    </div>
+                }
+                @if (Model.ValidShippingPhone.HasValue)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            <nop-label asp-for="ValidShippingPhone" />
+                        </div>
+                        <div class="col-md-7">
+                            <div class="form-text-row">@Model.ValidShippingPhone</div>
+                        </div>
+                    </div>
+                }
+                @if (Model.ValidShippingEmail.HasValue)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            <nop-label asp-for="ValidShippingEmail" />
+                        </div>
+                        <div class="col-md-7">
+                            <div class="form-text-row">@Model.ValidShippingEmail</div>
                         </div>
                     </div>
                 }

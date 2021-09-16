@@ -33,7 +33,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
 
         #region Methods
 
-        public virtual IViewComponentResult Invoke()
+        public IViewComponentResult Invoke()
         {
             if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
                 return Content(string.Empty);

@@ -40,7 +40,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Components
 
         #region Methods
 
-        public virtual IViewComponentResult Invoke(string widgetZone, object additionalData)
+        public IViewComponentResult Invoke(string widgetZone, object additionalData)
         {
             if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
                 return Content(string.Empty);
@@ -54,7 +54,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Components
                     if (payload != null)
                     {
                         var model = JsonConvert.DeserializeObject<OrderFraudInformationModel>(payload);
-                        return View("~/Plugins/Misc.IPQualityScore/Areas/Admin/Views/OrderFraudInfrormation.cshtml", model);
+                        return View("~/Plugins/Misc.IPQualityScore/Areas/Admin/Views/OrderFraudInformation.cshtml", model);
                     }
                 }
             }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
@@ -20,6 +21,7 @@ using Nop.Services.Helpers;
 using Nop.Services.Localization;
 using Nop.Services.Logging;
 using Nop.Services.Orders;
+using Nop.Web.Framework.Mvc.Routing;
 
 namespace Nop.Plugin.Misc.IPQualityScore.Services
 {
@@ -31,12 +33,13 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         private readonly ICountryService _countryService;
         private readonly ICustomerService _customerService;
         private readonly IGenericAttributeService _genericAttributeService;
+        private readonly ILocalizationService _localizationService;
+        private readonly ILogger _logger;
         private readonly IOrderService _orderService;
         private readonly IOrderProcessingService _orderProcessingService;
         private readonly IPQualityScoreApi _iPQualityScoreApi;
         private readonly IPQualityScoreSettings _iPQualityScoreSettings;
-        private readonly ILocalizationService _localizationService;
-        private readonly ILogger _logger;
+        private readonly IStateProvinceService _stateProvinceService;
         private readonly IUserAgentHelper _userAgentHelper;
         private readonly IWidgetPluginManager _widgetPluginManager;
         private readonly IWorkContext _workContext;
@@ -46,17 +49,17 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
 
         #region Ctor
 
-        public IPQualityScoreService(
-            IAddressService addressService,
+        public IPQualityScoreService(IAddressService addressService,
             ICountryService countryService,
             ICustomerService customerService,
             IGenericAttributeService genericAttributeService,
+            ILocalizationService localizationService,
+            ILogger logger,
             IOrderService orderService,
             IOrderProcessingService orderProcessingService,
             IPQualityScoreApi iPQualityScoreApi,
             IPQualityScoreSettings iPQualityScoreSettings,
-            ILocalizationService localizationService,
-            ILogger logger,
+            IStateProvinceService stateProvinceService,
             IUserAgentHelper userAgentHelper,
             IWidgetPluginManager widgetPluginManager,
             IWorkContext workContext,
@@ -66,12 +69,13 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             _countryService = countryService;
             _customerService = customerService;
             _genericAttributeService = genericAttributeService;
+            _localizationService = localizationService;
+            _logger = logger;
             _orderService = orderService;
             _orderProcessingService = orderProcessingService;
             _iPQualityScoreApi = iPQualityScoreApi;
             _iPQualityScoreSettings = iPQualityScoreSettings;
-            _localizationService = localizationService;
-            _logger = logger;
+            _stateProvinceService = stateProvinceService;
             _userAgentHelper = userAgentHelper;
             _widgetPluginManager = widgetPluginManager;
             _workContext = workContext;
@@ -87,7 +91,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         /// </summary>
         /// <param name="actionContext">The action context.</param>
         /// <returns>The value indicating whether to the request can be validated using IPQS.</returns>
-        public virtual bool CanValidateIPReputation(ActionContext actionContext)
+        public bool CanValidateIPReputation(ActionContext actionContext)
         {
             if (actionContext is null)
                 throw new ArgumentNullException(nameof(actionContext));
@@ -116,7 +120,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         /// </summary>
         /// <param name="actionContext">The action context.</param>
         /// <returns>The <see cref="Task"/> containing the value indicating whether to the request is valid.</returns>
-        public virtual async Task<bool> ValidateRequestAsync(ActionContext actionContext)
+        public async Task<bool> ValidateRequestAsync(ActionContext actionContext)
         {
             if (actionContext is null)
                 throw new ArgumentNullException(nameof(actionContext));
@@ -133,7 +137,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         /// <param name="order">The order.</param>
         /// <param name="actionContext">The action context.</param>
         /// <returns>The value indicating whether to the order can be validated using IPQS.</returns>
-        public virtual bool CanValidateOrder(Order order, ActionContext actionContext)
+        public bool CanValidateOrder(Order order, ActionContext actionContext)
         {
             if (order is null)
                 throw new ArgumentNullException(nameof(order));
@@ -156,7 +160,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         /// <param name="order">The order.</param>
         /// <param name="actionContext">The action context.</param>
         /// <returns>The <see cref="Task"/> containing the value indicating whether to the order is valid.</returns>
-        public virtual async Task<bool> ValidateOrderAsync(Order order, ActionContext actionContext)
+        public async Task<bool> ValidateOrderAsync(Order order, ActionContext actionContext)
         {
             if (order is null)
                 throw new ArgumentNullException(nameof(order));
@@ -169,7 +173,13 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
 
             var orderFraudInformationModel = new OrderFraudInformationModel
             {
-                RiskScore = response?.TransactionDetails?.RiskScore ?? 0
+                PaymentRiskScore = response?.TransactionDetails?.RiskScore ?? 0,
+                ValidBillingAddress = response?.TransactionDetails?.ValidBillingAddress,
+                ValidBillingPhone = response?.TransactionDetails?.ValidBillingPhone,
+                ValidBillingEmail = response?.TransactionDetails?.ValidBillingEmail,
+                ValidShippingAddress = response?.TransactionDetails?.ValidShippingAddress,
+                ValidShippingPhone = response?.TransactionDetails?.ValidShippingPhone,
+                ValidShippingEmail = response?.TransactionDetails?.ValidShippingEmail
             };
 
             if (!string.IsNullOrEmpty(_iPQualityScoreSettings.UserIdVariableName))
@@ -180,7 +190,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
                     ["type"] = "devicetracker",
                 });
                 if (deviceFingerprintResponse?.Success == true)
-                    orderFraudInformationModel.FraudChance = deviceFingerprintResponse.FraudChance;
+                    orderFraudInformationModel.DeviceFingerprintRiskScore = deviceFingerprintResponse.FraudChance;
             }
 
             var payload = JsonConvert.SerializeObject(orderFraudInformationModel);
@@ -193,7 +203,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         /// Approves the order.
         /// </summary>
         /// <param name="order">The order.</param>
-        public virtual void ApproveOrder(Order order)
+        public void ApproveOrder(Order order)
         {
             SetOrderStatus(order, _iPQualityScoreSettings.ApproveStatusId);
         }
@@ -202,10 +212,10 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         /// Rejectes the order.
         /// </summary>
         /// <param name="order">The order.</param>
-        public virtual void RejectOrder(Order order)
+        public void RejectOrder(Order order)
         {
             SetOrderStatus(order, _iPQualityScoreSettings.RejectStatusId);
-            
+
             _orderService.InsertOrderNote(new OrderNote
             {
                 OrderId = order.Id,
@@ -222,7 +232,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         /// </summary>
         /// <param name="actionContext">The action context.</param>
         /// <returns>The value indicating whether to the email can be validated using IPQS.</returns>
-        public virtual bool CanValidateEmailForRequest(ActionContext actionContext)
+        public bool CanValidateEmailForRequest(ActionContext actionContext)
         {
             if (actionContext is null)
                 throw new ArgumentNullException(nameof(actionContext));
@@ -260,7 +270,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         /// </summary>
         /// <param name="actionContext">The action context.</param>
         /// <returns>The <see cref="Task"/> containing the value indicating whether to the email is valid.</returns>
-        public virtual async Task<bool> ValidateEmailForRequestAsync(ActionContext actionContext)
+        public async Task<bool> ValidateEmailForRequestAsync(ActionContext actionContext)
         {
             if (actionContext is null)
                 throw new ArgumentNullException(nameof(actionContext));
@@ -301,7 +311,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         /// </summary>
         /// <param name="httpContext">The HTTP context.</param>
         /// <returns>The value indicating whether to the IPQualityScore device fingerprint can be displayed in public store.</returns>
-        public virtual bool CanDisplayDeviceFingerprint(HttpContext httpContext)
+        public bool CanDisplayDeviceFingerprint(HttpContext httpContext)
         {
             if (httpContext is null)
                 throw new ArgumentNullException(nameof(httpContext));
@@ -360,22 +370,23 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         private IDictionary<string, string> GetIpReputationTransactionQuery(Order order, HttpContext httpContext)
         {
             var query = GetIpReputationQuery(httpContext);
+            var customer = _customerService.GetCustomerById(order.CustomerId);
+            var orderItems = _orderService.GetOrderItems(order.Id);
 
             var billingAddress = _addressService.GetAddressById(order.BillingAddressId);
             if (billingAddress != null)
             {
-                if (!string.IsNullOrWhiteSpace(billingAddress.Email))
-                    query["billing_email"] = billingAddress.Email;
-
-                if (!string.IsNullOrWhiteSpace(billingAddress.PhoneNumber))
-                    query["billing_phone"] = billingAddress.PhoneNumber;
-
-                if (billingAddress.CountryId.HasValue)
-                {
-                    var country = _countryService.GetCountryById(billingAddress.CountryId.Value);
-                    if (country != null)
-                        query["billing_country"] = country.TwoLetterIsoCode;
-                }
+                query["billing_first_name"] = billingAddress.FirstName ?? string.Empty;
+                query["billing_last_name"] = billingAddress.LastName ?? string.Empty;
+                query["billing_company"] = billingAddress.Company ?? string.Empty;
+                query["billing_country"] = _countryService.GetCountryById(billingAddress.CountryId ?? 0)?.TwoLetterIsoCode;
+                query["billing_address_1"] = billingAddress.Address1 ?? string.Empty;
+                query["billing_address_2"] = billingAddress.Address2 ?? string.Empty;
+                query["billing_city"] = billingAddress.City ?? string.Empty;
+                query["billing_region"] = _stateProvinceService.GetStateProvinceById(billingAddress.StateProvinceId ?? 0)?.Name;
+                query["billing_postcode"] = billingAddress.ZipPostalCode ?? string.Empty;
+                query["billing_email"] = billingAddress.Email ?? string.Empty;
+                query["billing_phone"] = billingAddress.PhoneNumber ?? string.Empty;
             }
 
             if (order.ShippingAddressId.HasValue && !order.PickupInStore)
@@ -383,20 +394,23 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
                 var shippingAddress = _addressService.GetAddressById(order.ShippingAddressId.Value);
                 if (shippingAddress != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(shippingAddress.Email))
-                        query["shipping_email"] = shippingAddress.Email;
-
-                    if (!string.IsNullOrWhiteSpace(shippingAddress.PhoneNumber))
-                        query["shipping_phone"] = shippingAddress.PhoneNumber;
-
-                    if (shippingAddress.CountryId.HasValue)
-                    {
-                        var country = _countryService.GetCountryById(shippingAddress.CountryId.Value);
-                        if (country != null)
-                            query["shipping_country"] = country.TwoLetterIsoCode;
-                    }
+                    query["shipping_first_name"] = shippingAddress.FirstName ?? string.Empty;
+                    query["shipping_last_name"] = shippingAddress.LastName ?? string.Empty;
+                    query["shipping_company"] = shippingAddress.Company ?? string.Empty;
+                    query["shipping_country"] = _countryService.GetCountryById(shippingAddress.CountryId ?? 0)?.TwoLetterIsoCode;
+                    query["shipping_address_1"] = shippingAddress.Address1 ?? string.Empty;
+                    query["shipping_address_2"] = shippingAddress.Address2 ?? string.Empty;
+                    query["shipping_city"] = shippingAddress.City ?? string.Empty;
+                    query["shipping_region"] = _stateProvinceService.GetStateProvinceById(shippingAddress.StateProvinceId ?? 0)?.Name;
+                    query["shipping_postcode"] = shippingAddress.ZipPostalCode ?? string.Empty;
+                    query["shipping_email"] = shippingAddress.Email ?? string.Empty;
+                    query["shipping_phone"] = shippingAddress.PhoneNumber ?? string.Empty;
                 }
             }
+
+            query["username"] = customer.Username ?? string.Empty;
+            query["order_amount"] = order.OrderTotal.ToString(CultureInfo.InvariantCulture);
+            query["order_quantity"] = orderItems.Sum(item => item.Quantity).ToString(CultureInfo.InvariantCulture);
 
             return query;
         }
@@ -441,9 +455,16 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
 
         private string GetCurrentRouteName(HttpContext httpContext)
         {
-            return httpContext
+            //first, try to get a common route name
+            var routeName = httpContext
                 .GetEndpoint()?.Metadata
                 .GetMetadata<RouteNameMetadata>()?.RouteName;
+
+            //then try to get a generic one (actually it's an action name, not the route)
+            if (string.IsNullOrEmpty(routeName) && httpContext.GetRouteValue(NopPathRouteDefaults.SeNameFieldKey) != null)
+                routeName = httpContext.GetRouteValue(NopPathRouteDefaults.ActionFieldKey)?.ToString();
+
+            return routeName;
         }
 
         private bool CanValidateRequestIP(HttpContext httpContext)
