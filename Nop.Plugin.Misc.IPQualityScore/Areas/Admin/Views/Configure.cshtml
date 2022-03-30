@@ -2,11 +2,11 @@
 
 @{
     Layout = "_ConfigurePlugin";
-
-    Html.AppendCssFileParts("~/lib/tagEditor/jquery.tag-editor.css");
-    Html.AppendScriptParts("~/lib/tagEditor/jquery.tag-editor.min.js");
-    Html.AppendScriptParts("~/lib/tagEditor/jquery.caret.min.js");
 }
+
+<link rel="stylesheet" href="~/lib_npm/jquery-tageditor/jquery.tag-editor.css" />
+<script src="~/lib_npm/jquery-tageditor/jquery.caret.min.js"></script>
+<script src="~/lib_npm/jquery-tageditor/jquery.tag-editor.min.js"></script>
 
 @await Component.InvokeAsync("StoreScopeConfiguration")
 
@@ -169,7 +169,7 @@
                                         <span asp-validation-for="OrderScoringEnabled"></span>
                                     </div>
                                 </div>
-                                <nop-nested-setting asp-for="OrderScoringEnabled">
+                                <nop-nested-setting asp-for="OrderScoringEnabled" disable-auto-generation="true">
                                     <div id="pnlOrderScoring">
                                         <div class="form-group row">
                                             <div class="col-md-3">
@@ -242,7 +242,7 @@
                                         <span asp-validation-for="EmailValidationEnabled"></span>
                                     </div>
                                 </div>
-                                <nop-nested-setting asp-for="EmailValidationEnabled">
+                                <nop-nested-setting asp-for="EmailValidationEnabled" disable-auto-generation="true">
                                     <div id="pnlEmailReputation">
                                         <div class="form-group row">
                                             <div class="col-md-3">
@@ -285,7 +285,7 @@
                                         <span asp-validation-for="DeviceFingerprintEnabled"></span>
                                     </div>
                                 </div>
-                                <nop-nested-setting asp-for="DeviceFingerprintEnabled">
+                                <nop-nested-setting asp-for="DeviceFingerprintEnabled" disable-auto-generation="true">
                                     <div id="pnlDeviceFingerprint">
                                         <div class="form-group row">
                                             <div class="col-md-3">

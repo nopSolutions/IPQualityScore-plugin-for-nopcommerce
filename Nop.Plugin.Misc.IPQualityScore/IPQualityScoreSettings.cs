@@ -31,7 +31,7 @@ namespace Nop.Plugin.Misc.IPQualityScore
         /// <summary>
         /// Gets or sets the IP reputation / Order scoring fraud score for blocking
         /// </summary>
-        public double IPReputationFraudScoreForBlocking { get; set; }
+        public decimal IPReputationFraudScoreForBlocking { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to block the proxy
@@ -88,7 +88,7 @@ namespace Nop.Plugin.Misc.IPQualityScore
         /// <summary>
         /// Gets or sets the fraud score for blocking
         /// </summary>
-        public double RiskScoreForBlocking { get; set; }
+        public decimal RiskScoreForBlocking { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction strictness. Adjusts the weights for penalties applied due to irregularities and fraudulent patterns detected on order and transaction details that can be optionally provided on each API request. This feature is only beneficial if you are passing order and transaction details. A table is available further down the page with supported transaction variables.
@@ -124,7 +124,7 @@ namespace Nop.Plugin.Misc.IPQualityScore
         /// <summary>
         /// Gets or sets the email reputation fraud score for blocking
         /// </summary>
-        public double EmailReputationFraudScoreForBlocking { get; set; }
+        public decimal EmailReputationFraudScoreForBlocking { get; set; }
 
         /// <summary>
         /// Gets or sets the strictness level for machine learning pattern recognition of abusive email addresses with the "recent_abuse" data point. Default level of 0 provides good coverage, however if you are filtering account applications and facing advanced fraudsters then we recommend increasing this value to level 1 or 2.

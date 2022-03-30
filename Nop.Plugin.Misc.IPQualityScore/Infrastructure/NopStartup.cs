@@ -21,6 +21,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
         /// <param name="configuration">Configuration of the application</param>
         public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
+            services.AddScoped<IPQualityScoreService>();
             services.AddHttpClient<IPQualityScoreApi>().WithProxy();
 
             if (DataSettingsManager.IsDatabaseInstalled())

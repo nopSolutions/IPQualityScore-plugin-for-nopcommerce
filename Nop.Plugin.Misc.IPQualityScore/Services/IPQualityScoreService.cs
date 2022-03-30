@@ -325,7 +325,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
                 return true;
             }
 
-            var isFraud = response.FraudScore >= _iPQualityScoreSettings.EmailReputationFraudScoreForBlocking;
+            var isFraud = response.FraudScore >= Convert.ToDouble(_iPQualityScoreSettings.EmailReputationFraudScoreForBlocking);
 
             return response.Success && response.Valid && !response.Disposable && !isFraud;
         }
@@ -459,7 +459,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
             var isProxy = _iPQualityScoreSettings.ProxyBlockingEnabled && response.IsProxy;
             var isVpn = _iPQualityScoreSettings.VpnBlockingEnabled && response.IsVpn;
             var isTor = _iPQualityScoreSettings.TorBlockingEnabled && response.IsTor;
-            var isFraud = response.FraudScore >= _iPQualityScoreSettings.IPReputationFraudScoreForBlocking;
+            var isFraud = response.FraudScore >= Convert.ToDouble(_iPQualityScoreSettings.IPReputationFraudScoreForBlocking);
 
             if (_iPQualityScoreSettings.AllowCrawlers && response.IsCrawler)
                 return response.Success;
@@ -471,7 +471,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         {
             var isValidRequest = IsValidResponse(response);
             if (isValidRequest && response?.TransactionDetails != null)
-                return response.TransactionDetails.RiskScore < _iPQualityScoreSettings.RiskScoreForBlocking;
+                return response.TransactionDetails.RiskScore < Convert.ToDouble(_iPQualityScoreSettings.RiskScoreForBlocking);
 
             return isValidRequest;
         }

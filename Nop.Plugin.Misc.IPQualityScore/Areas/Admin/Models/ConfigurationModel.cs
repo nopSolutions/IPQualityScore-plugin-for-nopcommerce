@@ -66,7 +66,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
         /// Gets or sets the fraud score for blocking
         /// </summary>
         [NopResourceDisplayName("Plugins.Misc.IPQualityScore.Fields.IPReputationFraudScoreForBlocking")]
-        public double IPReputationFraudScoreForBlocking { get; set; }
+        public decimal IPReputationFraudScoreForBlocking { get; set; }
         public bool IPReputationFraudScoreForBlocking_OverrideForStore { get; set; }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
         /// Gets or sets the fraud score for blocking
         /// </summary>
         [NopResourceDisplayName("Plugins.Misc.IPQualityScore.Fields.RiskScoreForBlocking")]
-        public double RiskScoreForBlocking { get; set; }
+        public decimal RiskScoreForBlocking { get; set; }
         public bool RiskScoreForBlocking_OverrideForStore { get; set; }
 
         /// <summary>
@@ -184,7 +184,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
         /// Gets or sets the email reputation fraud score for blocking
         /// </summary>
         [NopResourceDisplayName("Plugins.Misc.IPQualityScore.Fields.EmailReputationFraudScoreForBlocking")]
-        public double EmailReputationFraudScoreForBlocking { get; set; }
+        public decimal EmailReputationFraudScoreForBlocking { get; set; }
         public bool EmailReputationFraudScoreForBlocking_OverrideForStore { get; set; }
 
         /// <summary>

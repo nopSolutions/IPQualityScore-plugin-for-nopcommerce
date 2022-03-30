@@ -149,7 +149,7 @@ namespace Nop.Plugin.Misc.IPQualityScore
             }
 
             //locales
-            await _localizationService.AddLocaleResourceAsync(new Dictionary<string, string>
+            await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
             {
                 ["Plugins.Misc.IPQualityScore.DeviceFingerprint"] = "Device Fingerprint",
                 ["Plugins.Misc.IPQualityScore.EmailReputation"] = "Email Validation",
