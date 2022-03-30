@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models;
 using Nop.Services.Cms;
@@ -17,22 +18,21 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Components
     {
         #region Fields
 
-        private readonly IOrderService _orderService;
         private readonly IGenericAttributeService _genericAttributeService;
+        private readonly IOrderService _orderService;
         private readonly IWidgetPluginManager _widgetPluginManager;
 
         #endregion
 
         #region Ctor
 
-        public OrderFraudInformationViewComponent(
+        public OrderFraudInformationViewComponent(IGenericAttributeService genericAttributeService,
             IOrderService orderService,
-            IGenericAttributeService genericAttributeService,
             IWidgetPluginManager widgetPluginManager
         )
         {
-            _orderService = orderService;
             _genericAttributeService = genericAttributeService;
+            _orderService = orderService;
             _widgetPluginManager = widgetPluginManager;
         }
 
@@ -40,17 +40,20 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Components
 
         #region Methods
 
-        public IViewComponentResult Invoke(string widgetZone, object additionalData)
+        public async Task<IViewComponentResult> InvokeAsync(string widgetZone, object additionalData)
         {
-            if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
+            if (await _widgetPluginManager.LoadPluginBySystemNameAsync(Defaults.SystemName) is not IPQualityScorePlugin plugin)
+                return Content(string.Empty);
+
+            if (!_widgetPluginManager.IsPluginActive(plugin))
                 return Content(string.Empty);
 
             if (additionalData is OrderModel orderModel)
             {
-                var order = _orderService.GetOrderById(orderModel.Id);
+                var order = await _orderService.GetOrderByIdAsync(orderModel.Id);
                 if (order != null)
                 {
-                    var payload = _genericAttributeService.GetAttribute<string>(order, Defaults.OrderFraudInformationAttributeName);
+                    var payload = await _genericAttributeService.GetAttributeAsync<string>(order, Defaults.OrderFraudInformationAttributeName);
                     if (payload != null)
                     {
                         var model = JsonConvert.DeserializeObject<OrderFraudInformationModel>(payload);

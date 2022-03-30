@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Infrastructure;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Nop.Core.Domain.Orders;
 using Nop.Services.Events;
 
@@ -15,8 +16,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
 
         #region Ctor
 
-        public EventConsumer(
-            IActionContextAccessor actionContextAccessor,
+        public EventConsumer(IActionContextAccessor actionContextAccessor,
             IPQualityScoreService iPQualityScoreService)
         {
             _actionContextAccessor = actionContextAccessor;
@@ -25,19 +25,24 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
 
         #endregion
 
-        #region Method
+        #region Methods
 
-        public void HandleEvent(OrderPlacedEvent eventMessage)
+        /// <summary>
+        /// Handle order placed event
+        /// </summary>
+        /// <param name="eventMessage">Event message</param>
+        /// <returns>A task that represents the asynchronous operation</returns>
+        public async Task HandleEventAsync(OrderPlacedEvent eventMessage)
         {
             var order = eventMessage.Order;
             var actionContext = _actionContextAccessor.ActionContext;
 
-            if (_iPQualityScoreService.CanValidateOrder(order, actionContext))
+            if (await _iPQualityScoreService.CanValidateOrderAsync(order, actionContext))
             {
-                if (_iPQualityScoreService.ValidateOrderAsync(order, actionContext).Result)
-                    _iPQualityScoreService.ApproveOrder(order);
+                if (await _iPQualityScoreService.ValidateOrderAsync(order, actionContext))
+                    await _iPQualityScoreService.ApproveOrderAsync(order);
                 else
-                    _iPQualityScoreService.RejectOrder(order);
+                    await _iPQualityScoreService.RejectOrderAsync(order);
             }
         }
 

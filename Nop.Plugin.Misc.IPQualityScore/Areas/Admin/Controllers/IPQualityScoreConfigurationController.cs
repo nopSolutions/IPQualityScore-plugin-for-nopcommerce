@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Nop.Core;
@@ -18,16 +19,14 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
 {
     [Area(AreaNames.Admin)]
     [AutoValidateAntiforgeryToken]
-    [ValidateIpAddress]
     [AuthorizeAdmin]
-    [ValidateVendor]
     public class IPQualityScoreConfigurationController : BasePluginController
     {
         #region Fields
 
-        private readonly IPermissionService _permissionService;
         private readonly ILocalizationService _localizationService;
         private readonly INotificationService _notificationService;
+        private readonly IPermissionService _permissionService;
         private readonly ISettingService _settingService;
         private readonly IStoreContext _storeContext;
 
@@ -35,16 +34,15 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
 
         #region Ctor
 
-        public IPQualityScoreConfigurationController(
-            IPermissionService permissionService,
-            ILocalizationService localizationService,
+        public IPQualityScoreConfigurationController(ILocalizationService localizationService,
             INotificationService notificationService,
+            IPermissionService permissionService,
             ISettingService settingService,
             IStoreContext storeContext)
         {
-            _permissionService = permissionService;
             _localizationService = localizationService;
             _notificationService = notificationService;
+            _permissionService = permissionService;
             _settingService = settingService;
             _storeContext = storeContext;
         }
@@ -53,18 +51,14 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
 
         #region Methods
 
-        /// <summary>
-        /// Configures the plugin in admin area.
-        /// </summary>
-        /// <returns>The view to configure.</returns>
-        public IActionResult Configure()
+        public async Task<IActionResult> Configure()
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManagePlugins))
+            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManagePlugins))
                 return AccessDeniedView();
 
             //load settings for a chosen store scope
-            var storeScope = _storeContext.ActiveStoreScopeConfiguration;
-            var iPQualityScoreSettings = _settingService.LoadSetting<IPQualityScoreSettings>(storeScope);
+            var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
+            var iPQualityScoreSettings = await _settingService.LoadSettingAsync<IPQualityScoreSettings>(storeScope);
 
             var model = new ConfigurationModel
             {
@@ -97,71 +91,75 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
                 IPBlockNotificationTypeId = (int)iPQualityScoreSettings.IPBlockNotificationType,
             };
 
-            var orderStatusItems = OrderStatus.Pending.ToSelectList(false);
+            var orderStatusItems = await OrderStatus.Pending.ToSelectListAsync(false);
             foreach (var statusItem in orderStatusItems)
                 model.AvailableOrderStatuses.Add(statusItem);
 
-            model.AvailableIPQualityGroupIds.Add(new SelectListItem(
-                _localizationService.GetResource("Plugins.Misc.IPQualityScore.IPQualityGroups.Customer"), Defaults.IPQualityGroups.Customer.Id.ToString()));
-            model.AvailableIPQualityGroupIds.Add(new SelectListItem(
-                _localizationService.GetResource("Plugins.Misc.IPQualityScore.IPQualityGroups.Catalog"), Defaults.IPQualityGroups.Catalog.Id.ToString()));
-            model.AvailableIPQualityGroupIds.Add(new SelectListItem(
-                _localizationService.GetResource("Plugins.Misc.IPQualityScore.IPQualityGroups.Checkout"), Defaults.IPQualityGroups.Checkout.Id.ToString()));
+            model.AvailableIPQualityGroupIds.Add(new SelectListItem
+            {
+                Text = await _localizationService.GetResourceAsync("Plugins.Misc.IPQualityScore.IPQualityGroups.Customer"),
+                Value = Defaults.IPQualityGroups.Customer.Id.ToString()
+            });
+            model.AvailableIPQualityGroupIds.Add(new SelectListItem
+            {
+                Text = await _localizationService.GetResourceAsync("Plugins.Misc.IPQualityScore.IPQualityGroups.Catalog"),
+                Value = Defaults.IPQualityGroups.Catalog.Id.ToString()
+            });
+            model.AvailableIPQualityGroupIds.Add(new SelectListItem
+            {
+                Text = await _localizationService.GetResourceAsync("Plugins.Misc.IPQualityScore.IPQualityGroups.Checkout"),
+                Value = Defaults.IPQualityGroups.Checkout.Id.ToString()
+            });
 
-            var iPBlockNotificationTypeItems = IPBlockNotificationType.DisplayNotification.ToSelectList(false);
+            var iPBlockNotificationTypeItems = await IPBlockNotificationType.DisplayNotification.ToSelectListAsync(false);
             foreach (var iPBlockNotificationTypeItem in iPBlockNotificationTypeItems)
                 model.AvailableIPBlockNotificationTypes.Add(iPBlockNotificationTypeItem);
 
             if (storeScope > 0)
             {
-                model.ApiKey_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.ApiKey, storeScope);
-                model.IPReputationEnabled_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.IPReputationEnabled, storeScope);
-                model.IPReputationFraudScoreForBlocking_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.IPReputationFraudScoreForBlocking, storeScope);
-                model.ProxyBlockingEnabled_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.ProxyBlockingEnabled, storeScope);
-                model.VpnBlockingEnabled_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.VpnBlockingEnabled, storeScope);
-                model.TorBlockingEnabled_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.TorBlockingEnabled, storeScope);
-                model.IPReputationStrictness_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.IPReputationStrictness, storeScope);
-                model.AllowPublicAccessPoints_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.AllowPublicAccessPoints, storeScope);
-                model.LighterPenalties_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.LighterPenalties, storeScope);
-                model.OrderScoringEnabled_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.OrderScoringEnabled, storeScope);
-                model.RiskScoreForBlocking_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.RiskScoreForBlocking, storeScope);
-                model.TransactionStrictness_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.TransactionStrictness, storeScope);
-                model.ApproveStatusId_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.ApproveStatusId, storeScope);
-                model.RejectStatusId_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.RejectStatusId, storeScope);
-                model.EmailValidationEnabled_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.EmailValidationEnabled, storeScope);
-                model.EmailReputationFraudScoreForBlocking_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.EmailReputationFraudScoreForBlocking, storeScope);
-                model.AbuseStrictness_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.AbuseStrictness, storeScope);
-                model.DeviceFingerprintEnabled_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.DeviceFingerprintEnabled, storeScope);
-                model.DeviceFingerprintTrackingCode_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.DeviceFingerprintTrackingCode, storeScope);
-                model.DeviceFingerprintFraudChance_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.DeviceFingerprintFraudChance, storeScope);
-                model.AllowCrawlers_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.AllowCrawlers, storeScope);
-                model.BlockUserIfScriptIsBlocked_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.BlockUserIfScriptIsBlocked, storeScope);
-                model.InformCustomerAboutFraud_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.InformCustomerAboutFraud, storeScope);
-                model.UserIdVariableName_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.UserIdVariableName, storeScope);
-                model.IPQualityGroupIds_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.IPQualityGroupIds, storeScope);
-                model.IPBlockNotificationTypeId_OverrideForStore = _settingService.SettingExists(iPQualityScoreSettings, x => x.IPBlockNotificationType, storeScope);
+                model.ApiKey_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.ApiKey, storeScope);
+                model.IPReputationEnabled_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.IPReputationEnabled, storeScope);
+                model.IPReputationFraudScoreForBlocking_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.IPReputationFraudScoreForBlocking, storeScope);
+                model.ProxyBlockingEnabled_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.ProxyBlockingEnabled, storeScope);
+                model.VpnBlockingEnabled_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.VpnBlockingEnabled, storeScope);
+                model.TorBlockingEnabled_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.TorBlockingEnabled, storeScope);
+                model.IPReputationStrictness_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.IPReputationStrictness, storeScope);
+                model.AllowPublicAccessPoints_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.AllowPublicAccessPoints, storeScope);
+                model.LighterPenalties_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.LighterPenalties, storeScope);
+                model.OrderScoringEnabled_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.OrderScoringEnabled, storeScope);
+                model.RiskScoreForBlocking_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.RiskScoreForBlocking, storeScope);
+                model.TransactionStrictness_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.TransactionStrictness, storeScope);
+                model.ApproveStatusId_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.ApproveStatusId, storeScope);
+                model.RejectStatusId_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.RejectStatusId, storeScope);
+                model.EmailValidationEnabled_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.EmailValidationEnabled, storeScope);
+                model.EmailReputationFraudScoreForBlocking_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.EmailReputationFraudScoreForBlocking, storeScope);
+                model.AbuseStrictness_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.AbuseStrictness, storeScope);
+                model.DeviceFingerprintEnabled_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.DeviceFingerprintEnabled, storeScope);
+                model.DeviceFingerprintTrackingCode_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.DeviceFingerprintTrackingCode, storeScope);
+                model.DeviceFingerprintFraudChance_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.DeviceFingerprintFraudChance, storeScope);
+                model.AllowCrawlers_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.AllowCrawlers, storeScope);
+                model.BlockUserIfScriptIsBlocked_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.BlockUserIfScriptIsBlocked, storeScope);
+                model.InformCustomerAboutFraud_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.InformCustomerAboutFraud, storeScope);
+                model.UserIdVariableName_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.UserIdVariableName, storeScope);
+                model.IPQualityGroupIds_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.IPQualityGroupIds, storeScope);
+                model.IPBlockNotificationTypeId_OverrideForStore = await _settingService.SettingExistsAsync(iPQualityScoreSettings, x => x.IPBlockNotificationType, storeScope);
             }
 
             return View("~/Plugins/Misc.IPQualityScore/Areas/Admin/Views/Configure.cshtml", model);
         }
 
-        /// <summary>
-        /// Configures the plugin in admin area.
-        /// </summary>
-        /// <param name="model">The configuration model.</param>
-        /// <returns>The view to configure.</returns>
         [HttpPost]
-        public IActionResult Configure(ConfigurationModel model)
+        public async Task<IActionResult> Configure(ConfigurationModel model)
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManagePlugins))
+            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManagePaymentMethods))
                 return AccessDeniedView();
 
             if (!ModelState.IsValid)
-                return Configure();
+                return await Configure();
 
             //load settings for a chosen store scope
-            var storeScope = _storeContext.ActiveStoreScopeConfiguration;
-            var iPQualityScoreSettings = _settingService.LoadSetting<IPQualityScoreSettings>(storeScope);
+            var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
+            var iPQualityScoreSettings = await _settingService.LoadSettingAsync<IPQualityScoreSettings>(storeScope);
 
             //save settings
             iPQualityScoreSettings.ApiKey = model.ApiKey;
@@ -194,69 +192,64 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Controllers
             /* We do not clear cache after each setting update.
              * This behavior can increase performance because cached settings will not be cleared 
              * and loaded from database after each update */
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.ApiKey, model.ApiKey_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.IPReputationEnabled, model.IPReputationEnabled_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.IPReputationFraudScoreForBlocking, model.IPReputationFraudScoreForBlocking_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.ProxyBlockingEnabled, model.ProxyBlockingEnabled_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.VpnBlockingEnabled, model.VpnBlockingEnabled_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.TorBlockingEnabled, model.TorBlockingEnabled_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.IPReputationStrictness, model.IPReputationStrictness_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.AllowPublicAccessPoints, model.AllowPublicAccessPoints_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.LighterPenalties, model.LighterPenalties_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.OrderScoringEnabled, model.OrderScoringEnabled_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.RiskScoreForBlocking, model.RiskScoreForBlocking_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.TransactionStrictness, model.TransactionStrictness_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.ApproveStatusId, model.ApproveStatusId_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.RejectStatusId, model.RejectStatusId_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.EmailValidationEnabled, model.EmailValidationEnabled_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.EmailReputationFraudScoreForBlocking, model.EmailReputationFraudScoreForBlocking_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.AbuseStrictness, model.AbuseStrictness_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.DeviceFingerprintEnabled, model.DeviceFingerprintEnabled_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.DeviceFingerprintTrackingCode, model.DeviceFingerprintTrackingCode_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.DeviceFingerprintFraudChance, model.DeviceFingerprintFraudChance_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.AllowCrawlers, model.AllowCrawlers_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.BlockUserIfScriptIsBlocked, model.BlockUserIfScriptIsBlocked_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.InformCustomerAboutFraud, model.InformCustomerAboutFraud_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.UserIdVariableName, model.UserIdVariableName_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.IPQualityGroupIds, model.IPQualityGroupIds_OverrideForStore, storeScope, false);
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.IPBlockNotificationType, model.IPBlockNotificationTypeId_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.ApiKey, model.ApiKey_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.IPReputationEnabled, model.IPReputationEnabled_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.IPReputationFraudScoreForBlocking, model.IPReputationFraudScoreForBlocking_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.ProxyBlockingEnabled, model.ProxyBlockingEnabled_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.VpnBlockingEnabled, model.VpnBlockingEnabled_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.TorBlockingEnabled, model.TorBlockingEnabled_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.IPReputationStrictness, model.IPReputationStrictness_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.AllowPublicAccessPoints, model.AllowPublicAccessPoints_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.LighterPenalties, model.LighterPenalties_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.OrderScoringEnabled, model.OrderScoringEnabled_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.RiskScoreForBlocking, model.RiskScoreForBlocking_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.TransactionStrictness, model.TransactionStrictness_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.ApproveStatusId, model.ApproveStatusId_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.RejectStatusId, model.RejectStatusId_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.EmailValidationEnabled, model.EmailValidationEnabled_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.EmailReputationFraudScoreForBlocking, model.EmailReputationFraudScoreForBlocking_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.AbuseStrictness, model.AbuseStrictness_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.DeviceFingerprintEnabled, model.DeviceFingerprintEnabled_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.DeviceFingerprintTrackingCode, model.DeviceFingerprintTrackingCode_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.DeviceFingerprintFraudChance, model.DeviceFingerprintFraudChance_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.AllowCrawlers, model.AllowCrawlers_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.BlockUserIfScriptIsBlocked, model.BlockUserIfScriptIsBlocked_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.InformCustomerAboutFraud, model.InformCustomerAboutFraud_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.UserIdVariableName, model.UserIdVariableName_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.IPQualityGroupIds, model.IPQualityGroupIds_OverrideForStore, storeScope, false);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.IPBlockNotificationType, model.IPBlockNotificationTypeId_OverrideForStore, storeScope, false);
 
             //now clear settings cache
-            _settingService.ClearCache();
+            await _settingService.ClearCacheAsync();
 
-            _notificationService.SuccessNotification(_localizationService.GetResource("Admin.Plugins.Saved"));
+            _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Admin.Plugins.Saved"));
 
             return RedirectToAction("Configure");
         }
 
-        /// <summary>
-        /// Saves the token.
-        /// </summary>
-        /// <param name="model">The configuration model.</param>
-        /// <returns>The view to configure.</returns>
         [HttpPost, ActionName("Configure")]
         [FormValueRequired("save-token")]
-        public IActionResult SaveToken(ConfigurationModel model)
+        public async Task<IActionResult> SaveToken(ConfigurationModel model)
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManagePlugins))
+            if (!await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManagePlugins))
                 return AccessDeniedView();
 
             if (string.IsNullOrWhiteSpace(model.ApiKey))
             {
-                _notificationService.ErrorNotification(_localizationService.GetResource("Plugins.Misc.IPQualityScore.Fields.ApiKey.Invalid"));
+                _notificationService.ErrorNotification(await _localizationService.GetResourceAsync("Plugins.Misc.IPQualityScore.Fields.ApiKey.Invalid"));
                 return RedirectToAction("Configure");
             }
 
             //load settings for a chosen store scope
-            var storeScope = _storeContext.ActiveStoreScopeConfiguration;
-            var iPQualityScoreSettings = _settingService.LoadSetting<IPQualityScoreSettings>(storeScope);
+            var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
+            var iPQualityScoreSettings = await _settingService.LoadSettingAsync<IPQualityScoreSettings>(storeScope);
 
             //save token
             iPQualityScoreSettings.ApiKey = model.ApiKey;
 
-            _settingService.SaveSettingOverridablePerStore(iPQualityScoreSettings, x => x.ApiKey, model.ApiKey_OverrideForStore, storeScope);
+            await _settingService.SaveSettingOverridablePerStoreAsync(iPQualityScoreSettings, x => x.ApiKey, model.ApiKey_OverrideForStore, storeScope);
 
-            _notificationService.SuccessNotification(_localizationService.GetResource("Admin.Plugins.Saved"));
+            _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Admin.Plugins.Saved"));
 
             return RedirectToAction("Configure");
         }

@@ -6,7 +6,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Models
     /// <summary>
     /// Represents a device fingerprint model
     /// </summary>
-    public class DeviceFingerprintModel : BaseNopModel
+    public record DeviceFingerprintModel : BaseNopModel
     {
         #region Properties
 

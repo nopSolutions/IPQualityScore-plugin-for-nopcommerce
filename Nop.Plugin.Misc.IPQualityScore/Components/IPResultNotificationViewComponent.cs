@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Nop.Plugin.Misc.IPQualityScore.Domain;
 using Nop.Services.Cms;
 using Nop.Web.Framework.Components;
@@ -20,8 +21,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
 
         #region Ctor
 
-        public IPResultInformationViewComponent(
-            IPQualityScoreSettings iPQualityScoreSettings,
+        public IPResultInformationViewComponent(IPQualityScoreSettings iPQualityScoreSettings,
             IWidgetPluginManager widgetPluginManager
         )
         {
@@ -33,12 +33,15 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
 
         #region Methods
 
-        public IViewComponentResult Invoke()
+        public async Task<IViewComponentResult> InvokeAsync(string widgetZone, object additionalData)
         {
-            if (!(_widgetPluginManager.LoadPluginBySystemName(Defaults.SystemName) is IPQualityScorePlugin plugin) || !_widgetPluginManager.IsPluginActive(plugin))
+            if (await _widgetPluginManager.LoadPluginBySystemNameAsync(Defaults.SystemName) is not IPQualityScorePlugin plugin)
                 return Content(string.Empty);
 
-            if (_iPQualityScoreSettings.IPReputationEnabled && 
+            if (!_widgetPluginManager.IsPluginActive(plugin))
+                return Content(string.Empty);
+
+            if (_iPQualityScoreSettings.IPReputationEnabled &&
                     _iPQualityScoreSettings.IPBlockNotificationType == IPBlockNotificationType.DisplayNotification &&
                         HttpContext.Items?.ContainsKey(Defaults.IPQualityResultId) == true)
             {

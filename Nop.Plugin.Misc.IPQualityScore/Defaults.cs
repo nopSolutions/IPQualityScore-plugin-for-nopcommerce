@@ -21,7 +21,7 @@ namespace Nop.Plugin.Misc.IPQualityScore
         /// Gets the plugin prevent fraud route name
         /// </summary>
         public static string PreventFraudRouteName => "Plugin.Misc.IPQualityScore.PreventFraud";
-        
+
         /// <summary>
         /// Gets the plugin prevent fraud route name
         /// </summary>
@@ -191,7 +191,7 @@ namespace Nop.Plugin.Misc.IPQualityScore
                 /// <summary>
                 /// Gets the user agent
                 /// </summary>
-                public static string UserAgent => $"nopCommerce-{NopVersion.CurrentVersion}";
+                public static string UserAgent => $"nopCommerce-{NopVersion.CURRENT_VERSION}";
 
                 /// <summary>
                 /// Gets the default timeout

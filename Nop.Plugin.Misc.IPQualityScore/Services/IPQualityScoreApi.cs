@@ -22,25 +22,25 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
 
         #region Methods
 
-        public Task<IPReputationResponse> GetIPReputationAsync(string ipAddress, IDictionary<string, string> queryString = null)
+        public async Task<IPReputationResponse> GetIPReputationAsync(string ipAddress, IDictionary<string, string> queryString = null)
         {
             if (ipAddress is null)
                 throw new ArgumentNullException(nameof(ipAddress));
 
-            return GetAsync<IPReputationResponse>($"{Defaults.IPQualityScore.Api.Endpoints.IPReputationPath}/{ApiKey}/{ipAddress}", queryString);
+            return await GetAsync<IPReputationResponse>($"{Defaults.IPQualityScore.Api.Endpoints.IPReputationPath}/{ApiKey}/{ipAddress}", queryString);
         }
 
-        public Task<EmailReputationResponse> GetEmailReputationAsync(string email, IDictionary<string, string> queryString = null)
+        public async Task<EmailReputationResponse> GetEmailReputationAsync(string email, IDictionary<string, string> queryString = null)
         {
             if (email is null)
                 throw new ArgumentNullException(nameof(email));
 
-            return GetAsync<EmailReputationResponse>($"{Defaults.IPQualityScore.Api.Endpoints.EmailReputationPath}/{ApiKey}/{email}", queryString);
+            return await GetAsync<EmailReputationResponse>($"{Defaults.IPQualityScore.Api.Endpoints.EmailReputationPath}/{ApiKey}/{email}", queryString);
         }
 
-        public Task<PostbackResponse> LookupRequestAsync(IDictionary<string, string> queryString = null)
+        public async Task<PostbackResponse> LookupRequestAsync(IDictionary<string, string> queryString = null)
         {
-            return GetAsync<PostbackResponse>($"{Defaults.IPQualityScore.Api.Endpoints.LookupRequestPath}/{ApiKey}", queryString);
+            return await GetAsync<PostbackResponse>($"{Defaults.IPQualityScore.Api.Endpoints.LookupRequestPath}/{ApiKey}", queryString);
         }
 
         #endregion

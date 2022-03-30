@@ -6,7 +6,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
     /// <summary>
     /// Represents a order fraud information model
     /// </summary>
-    public class OrderFraudInformationModel : BaseNopModel
+    public record OrderFraudInformationModel : BaseNopModel
     {
         #region Properties
 

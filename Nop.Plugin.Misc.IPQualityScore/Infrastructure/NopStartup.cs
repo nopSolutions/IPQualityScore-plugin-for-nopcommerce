@@ -23,7 +23,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
         {
             services.AddHttpClient<IPQualityScoreApi>().WithProxy();
 
-            if (DataSettingsManager.DatabaseIsInstalled)
+            if (DataSettingsManager.IsDatabaseInstalled())
                 services.Configure<MvcOptions>(options => options.Filters.Add(typeof(IPQualityScoreAsyncActionFilter)));
         }
 

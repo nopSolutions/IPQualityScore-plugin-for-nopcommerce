@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Plugin.Misc.IPQualityScore.Models;
 using Nop.Plugin.Misc.IPQualityScore.Services;
@@ -22,8 +23,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
 
         #region Ctor
 
-        public DeviceFingerprintViewComponent(
-            IPQualityScoreSettings iPQualityScoreSettings,
+        public DeviceFingerprintViewComponent(IPQualityScoreSettings iPQualityScoreSettings,
             IPQualityScoreService iPQualityScoreService,
             IWorkContext workContext
         )
@@ -37,18 +37,19 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
 
         #region Methods
 
-        public IViewComponentResult Invoke()
+        public async Task<IViewComponentResult> InvokeAsync(string widgetZone, object additionalData)
         {
-            if (!_iPQualityScoreService.CanDisplayDeviceFingerprint(HttpContext))
+            if (!await _iPQualityScoreService.CanDisplayDeviceFingerprintAsync(HttpContext))
                 return Content(string.Empty);
-            
+
+            var customer = await _workContext.GetCurrentCustomerAsync();
             var model = new DeviceFingerprintModel
             {
                 TrackingCode = _iPQualityScoreSettings.DeviceFingerprintTrackingCode,
                 FraudChance = _iPQualityScoreSettings.DeviceFingerprintFraudChance,
                 BlockUserIfScriptIsBlocked = _iPQualityScoreSettings.BlockUserIfScriptIsBlocked,
                 UserIdVariableName = _iPQualityScoreSettings.UserIdVariableName,
-                UserId = _workContext.CurrentCustomer.Id,
+                UserId = customer.Id,
                 IPBlockNotificationType = _iPQualityScoreSettings.IPBlockNotificationType,
             };
 

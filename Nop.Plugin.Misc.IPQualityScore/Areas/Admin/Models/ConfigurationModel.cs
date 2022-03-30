@@ -8,8 +8,19 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
     /// <summary>
     /// Represents a model to configure plugin
     /// </summary>
-    public class ConfigurationModel : BaseNopModel
+    public record ConfigurationModel : BaseNopModel
     {
+        #region Ctor
+
+        public ConfigurationModel()
+        {
+            AvailableOrderStatuses = new List<SelectListItem>();
+            AvailableIPQualityGroupIds = new List<SelectListItem>();
+            AvailableIPBlockNotificationTypes = new List<SelectListItem>();
+        }
+
+        #endregion
+
         #region Properties
 
         public int ActiveStoreScopeConfiguration { get; set; }
@@ -223,17 +234,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Models
         public bool UserIdVariableName_OverrideForStore { get; set; }
 
         #endregion
-
-        #endregion
-
-        #region Ctor
-
-        public ConfigurationModel()
-        {
-            AvailableOrderStatuses = new List<SelectListItem>();
-            AvailableIPQualityGroupIds = new List<SelectListItem>();
-            AvailableIPBlockNotificationTypes = new List<SelectListItem>();
-        }
 
         #endregion
     }

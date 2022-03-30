@@ -15,24 +15,23 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
     {
         #region Fields
 
+        private readonly ILocalizationService _localizationService;
         private readonly IPQualityScoreSettings _iPQualityScoreSettings;
         private readonly IPQualityScoreService _iPQualityScoreService;
-        private readonly ILocalizationService _localizationService;
         private readonly IWebHelper _webHelper;
 
         #endregion
 
         #region Ctor
 
-        public IPQualityScoreAsyncActionFilter(
+        public IPQualityScoreAsyncActionFilter(ILocalizationService localizationService,
             IPQualityScoreSettings iPQualityScoreSettings,
             IPQualityScoreService iPQualityScoreService,
-            ILocalizationService localizationService,
             IWebHelper webHelper)
         {
+            _localizationService = localizationService;
             _iPQualityScoreSettings = iPQualityScoreSettings;
             _iPQualityScoreService = iPQualityScoreService;
-            _localizationService = localizationService;
             _webHelper = webHelper;
         }
 
@@ -48,7 +47,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
         /// <returns>The <see cref="Task"/> that on completion indicates the filter has executed.</returns>
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            if (_iPQualityScoreService.CanValidateIPReputation(context))
+            if (await _iPQualityScoreService.CanValidateIPReputationAsync(context))
             {
                 var isValid = await _iPQualityScoreService.ValidateRequestAsync(context);
                 if (!isValid)
@@ -57,13 +56,13 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
                         context.HttpContext.Items.Add(Defaults.IPQualityResultId, string.Empty);
                     else
                     {
-                        context.Result = GeneratePreventFraudResult(context);
+                        context.Result = await GeneratePreventFraudResultAsync(context);
                         return;
                     }
                 }
             }
 
-            if (_iPQualityScoreService.CanValidateEmailForRequest(context))
+            if (await _iPQualityScoreService.CanValidateEmailForRequestAsync(context))
             {
                 var isValid = await _iPQualityScoreService.ValidateEmailForRequestAsync(context);
                 if (!isValid)
@@ -72,7 +71,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
                         context.HttpContext.Items.Add(Defaults.IPQualityResultId, string.Empty);
                     else
                     {
-                        context.Result = GeneratePreventFraudResult(context);
+                        context.Result = await GeneratePreventFraudResultAsync(context);
                         return;
                     }
                 }
@@ -85,14 +84,14 @@ namespace Nop.Plugin.Misc.IPQualityScore.Infrastructure
 
         #region Utilities
 
-        private IActionResult GeneratePreventFraudResult(ActionExecutingContext context)
+        private async Task<IActionResult> GeneratePreventFraudResultAsync(ActionExecutingContext context)
         {
             if (!_webHelper.IsAjaxRequest(context.HttpContext.Request))
                 return new RedirectToActionResult("PreventFraud", "IPQualityScore", null);
             else
             {
-                var fraudMessage = _localizationService
-                    .GetResource("Plugins.Misc.IPQualityScore.PreventFraudPage.Content");
+                var fraudMessage = await _localizationService.GetResourceAsync("Plugins.Misc.IPQualityScore.PreventFraudPage.Content");
+
                 return new BadRequestObjectResult(fraudMessage);
             }
         }

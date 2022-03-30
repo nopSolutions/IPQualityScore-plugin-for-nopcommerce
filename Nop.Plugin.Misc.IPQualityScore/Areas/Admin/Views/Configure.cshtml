@@ -11,10 +11,10 @@
 @await Component.InvokeAsync("StoreScopeConfiguration")
 
 <form asp-controller="IPQualityScoreConfiguration" asp-action="Configure" method="post">
-    <div class="panel-group">
-        <div class="panel panel-default">
-            <div class="panel-body">
-                <div class="form-group">
+    <div class="cards-group">
+        <div class="card card-default">
+            <div class="card-body">
+                <div class="form-group row">
                     <div class="col-md-3">
                         <nop-override-store-checkbox asp-for="ApiKey_OverrideForStore" asp-input="ApiKey" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                         <nop-label asp-for="ApiKey" />
@@ -29,7 +29,7 @@
                 </div>
                 @if (string.IsNullOrEmpty(Model.ApiKey))
                 {
-                    <div class="form-group">
+                    <div class="form-group row">
                         <div class="col-md-9 col-md-offset-3">
                             <input type="submit" name="save-token" class="btn bg-primary" value="@T("Admin.Common.Save")" />
                         </div>
@@ -37,13 +37,13 @@
                 }
                 else
                 {
-                    <div class="panel-group">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
+                    <div class="cards-group">
+                        <div class="card card-default">
+                            <div class="card-header">
                                 @T("Plugins.Misc.IPQualityScore.UserAndTransactionScoring")
                             </div>
-                            <div class="panel-body">
-                                <div class="form-group">
+                            <div class="card-body">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="IPReputationEnabled_OverrideForStore" asp-input="IPReputationEnabled" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="IPReputationEnabled" />
@@ -53,7 +53,7 @@
                                         <span asp-validation-for="IPReputationEnabled"></span>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="ProxyBlockingEnabled_OverrideForStore" asp-input="ProxyBlockingEnabled" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="ProxyBlockingEnabled" />
@@ -63,7 +63,7 @@
                                         <span asp-validation-for="ProxyBlockingEnabled"></span>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="VpnBlockingEnabled_OverrideForStore" asp-input="VpnBlockingEnabled" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="VpnBlockingEnabled" />
@@ -73,7 +73,7 @@
                                         <span asp-validation-for="VpnBlockingEnabled"></span>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="TorBlockingEnabled_OverrideForStore" asp-input="TorBlockingEnabled" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="TorBlockingEnabled" />
@@ -83,7 +83,7 @@
                                         <span asp-validation-for="TorBlockingEnabled"></span>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="IPReputationFraudScoreForBlocking_OverrideForStore" asp-input="IPReputationFraudScoreForBlocking" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="IPReputationFraudScoreForBlocking" />
@@ -93,7 +93,7 @@
                                         <span asp-validation-for="IPReputationFraudScoreForBlocking"></span>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="IPReputationStrictness_OverrideForStore" asp-input="IPReputationStrictness" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="IPReputationStrictness" />
@@ -103,7 +103,7 @@
                                         <span asp-validation-for="IPReputationStrictness"></span>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="AllowPublicAccessPoints_OverrideForStore" asp-input="AllowPublicAccessPoints" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="AllowPublicAccessPoints" />
@@ -113,7 +113,7 @@
                                         <span asp-validation-for="AllowPublicAccessPoints"></span>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="LighterPenalties_OverrideForStore" asp-input="LighterPenalties" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="LighterPenalties" />
@@ -123,7 +123,7 @@
                                         <span asp-validation-for="LighterPenalties"></span>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="AllowCrawlers_OverrideForStore" asp-input="AllowCrawlers" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="AllowCrawlers" />
@@ -133,7 +133,7 @@
                                         <span asp-validation-for="AllowCrawlers"></span>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-label asp-for="IPQualityGroupIds" />
                                     </div>
@@ -149,7 +149,7 @@
                                         </script>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="IPBlockNotificationTypeId_OverrideForStore" asp-input="IPBlockNotificationTypeId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="IPBlockNotificationTypeId" />
@@ -159,7 +159,7 @@
                                         <span asp-validation-for="IPBlockNotificationTypeId"></span>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="OrderScoringEnabled_OverrideForStore" asp-input="OrderScoringEnabled" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="OrderScoringEnabled" />
@@ -171,7 +171,7 @@
                                 </div>
                                 <nop-nested-setting asp-for="OrderScoringEnabled">
                                     <div id="pnlOrderScoring">
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <div class="col-md-3">
                                                 <nop-override-store-checkbox asp-for="RiskScoreForBlocking_OverrideForStore" asp-input="RiskScoreForBlocking" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                                 <nop-label asp-for="RiskScoreForBlocking" />
@@ -181,7 +181,7 @@
                                                 <span asp-validation-for="RiskScoreForBlocking"></span>
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <div class="col-md-3">
                                                 <nop-override-store-checkbox asp-for="TransactionStrictness_OverrideForStore" asp-input="TransactionStrictness" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                                 <nop-label asp-for="TransactionStrictness" />
@@ -191,7 +191,7 @@
                                                 <span asp-validation-for="TransactionStrictness"></span>
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <div class="col-md-3">
                                                 <nop-override-store-checkbox asp-for="ApproveStatusId_OverrideForStore" asp-input="ApproveStatusId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                                 <nop-label asp-for="ApproveStatusId" />
@@ -201,7 +201,7 @@
                                                 <span asp-validation-for="ApproveStatusId"></span>
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <div class="col-md-3">
                                                 <nop-override-store-checkbox asp-for="RejectStatusId_OverrideForStore" asp-input="RejectStatusId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                                 <nop-label asp-for="RejectStatusId" />
@@ -211,7 +211,7 @@
                                                 <span asp-validation-for="RejectStatusId"></span>
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <div class="col-md-3">
                                                 <nop-override-store-checkbox asp-for="InformCustomerAboutFraud_OverrideForStore" asp-input="InformCustomerAboutFraud" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                                 <nop-label asp-for="InformCustomerAboutFraud" />
@@ -226,13 +226,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="panel-group">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
+                    <div class="cards-group">
+                        <div class="card card-default">
+                            <div class="card-header">
                                 @T("Plugins.Misc.IPQualityScore.EmailReputation")
                             </div>
-                            <div class="panel-body">
-                                <div class="form-group">
+                            <div class="card-body">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="EmailValidationEnabled_OverrideForStore" asp-input="EmailValidationEnabled" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="EmailValidationEnabled" />
@@ -244,7 +244,7 @@
                                 </div>
                                 <nop-nested-setting asp-for="EmailValidationEnabled">
                                     <div id="pnlEmailReputation">
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <div class="col-md-3">
                                                 <nop-override-store-checkbox asp-for="EmailReputationFraudScoreForBlocking_OverrideForStore" asp-input="EmailReputationFraudScoreForBlocking" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                                 <nop-label asp-for="EmailReputationFraudScoreForBlocking" />
@@ -254,7 +254,7 @@
                                                 <span asp-validation-for="EmailReputationFraudScoreForBlocking"></span>
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <div class="col-md-3">
                                                 <nop-override-store-checkbox asp-for="AbuseStrictness_OverrideForStore" asp-input="AbuseStrictness" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                                 <nop-label asp-for="AbuseStrictness" />
@@ -269,13 +269,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="panel-group">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
+                    <div class="cards-group">
+                        <div class="card card-default">
+                            <div class="card-header">
                                 @T("Plugins.Misc.IPQualityScore.DeviceFingerprint")
                             </div>
-                            <div class="panel-body">
-                                <div class="form-group">
+                            <div class="card-body">
+                                <div class="form-group row">
                                     <div class="col-md-3">
                                         <nop-override-store-checkbox asp-for="DeviceFingerprintEnabled_OverrideForStore" asp-input="DeviceFingerprintEnabled" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                         <nop-label asp-for="DeviceFingerprintEnabled" />
@@ -287,7 +287,7 @@
                                 </div>
                                 <nop-nested-setting asp-for="DeviceFingerprintEnabled">
                                     <div id="pnlDeviceFingerprint">
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <div class="col-md-3">
                                                 <nop-override-store-checkbox asp-for="DeviceFingerprintFraudChance_OverrideForStore" asp-input="DeviceFingerprintFraudChance" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                                 <nop-label asp-for="DeviceFingerprintFraudChance" />
@@ -297,7 +297,7 @@
                                                 <span asp-validation-for="DeviceFingerprintFraudChance"></span>
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <div class="col-md-3">
                                                 <nop-override-store-checkbox asp-for="UserIdVariableName_OverrideForStore" asp-input="UserIdVariableName" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                                 <nop-label asp-for="UserIdVariableName" />
@@ -307,7 +307,7 @@
                                                 <span asp-validation-for="UserIdVariableName"></span>
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <div class="col-md-3">
                                                 <nop-override-store-checkbox asp-for="DeviceFingerprintTrackingCode_OverrideForStore" asp-input="DeviceFingerprintTrackingCode" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                                 <nop-label asp-for="DeviceFingerprintTrackingCode" />
@@ -320,7 +320,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <div class="col-md-3">
                                                 <nop-override-store-checkbox asp-for="BlockUserIfScriptIsBlocked_OverrideForStore" asp-input="BlockUserIfScriptIsBlocked" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                                                 <nop-label asp-for="BlockUserIfScriptIsBlocked" />
@@ -335,9 +335,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <div class="col-md-9 col-md-offset-3">
-                            <input type="submit" name="save" class="btn bg-primary" value="@T("Admin.Common.Save")" />
+                    <div class="form-group row">
+                        <div class="col-md-9 offset-md-3">
+                            <button type="submit" name="save" class="btn btn-primary">@T("Admin.Common.Save")</button>
                         </div>
                     </div>
                 }
@@ -360,25 +360,25 @@
 
     function toggleOrderScoring() {
         if ($("#@Html.IdFor(model => model.OrderScoringEnabled)").is(':checked')) {
-            $('#pnlOrderScoring').show();
+            $('#pnlOrderScoring').showElement();
         } else {
-            $('#pnlOrderScoring').hide();
+            $('#pnlOrderScoring').hideElement();
         }
     }
 
     function toggleEmailReputation() {
         if ($("#@Html.IdFor(model => model.EmailValidationEnabled)").is(':checked')) {
-            $('#pnlEmailReputation').show();
+            $('#pnlEmailReputation').showElement();
         } else {
-            $('#pnlEmailReputation').hide();
+            $('#pnlEmailReputation').hideElement();
         }
     }
 
     function toggleDeviceFingerprint() {
         if ($("#@Html.IdFor(model => model.DeviceFingerprintEnabled)").is(':checked')) {
-            $('#pnlDeviceFingerprint').show();
+            $('#pnlDeviceFingerprint').showElement();
         } else {
-            $('#pnlDeviceFingerprint').hide();
+            $('#pnlDeviceFingerprint').hideElement();
         }
     }
 </script>

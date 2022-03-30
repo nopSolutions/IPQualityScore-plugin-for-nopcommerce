@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Nop.Core.Domain.Cms;
@@ -10,8 +13,6 @@ using Nop.Services.Configuration;
 using Nop.Services.Localization;
 using Nop.Services.Plugins;
 using Nop.Web.Framework.Infrastructure;
-using System;
-using System.Collections.Generic;
 
 namespace Nop.Plugin.Misc.IPQualityScore
 {
@@ -23,34 +24,24 @@ namespace Nop.Plugin.Misc.IPQualityScore
         #region Fields
 
         private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly ISettingService _settingService;
         private readonly ILocalizationService _localizationService;
+        private readonly ISettingService _settingService;
         private readonly IUrlHelperFactory _urlHelperFactory;
         private readonly WidgetSettings _widgetSettings;
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// Gets a value indicating whether to hide this plugin on the widget list page in the admin area
-        /// </summary>
-        public bool HideInWidgetList => true;
-
-        #endregion
-
         #region Ctor
 
-        public IPQualityScorePlugin(
-            IActionContextAccessor actionContextAccessor,
-            ISettingService settingService,
+        public IPQualityScorePlugin(IActionContextAccessor actionContextAccessor,
             ILocalizationService localizationService,
+            ISettingService settingService,
             IUrlHelperFactory urlHelperFactory,
             WidgetSettings widgetSettings)
         {
             _actionContextAccessor = actionContextAccessor;
-            _settingService = settingService;
             _localizationService = localizationService;
+            _settingService = settingService;
             _urlHelperFactory = urlHelperFactory;
             _widgetSettings = widgetSettings;
         }
@@ -84,15 +75,18 @@ namespace Nop.Plugin.Misc.IPQualityScore
         /// <summary>
         /// Gets widget zones where this widget should be rendered
         /// </summary>
-        /// <returns>Widget zones</returns>
-        public IList<string> GetWidgetZones()
+        /// <returns>
+        /// A task that represents the asynchronous operation
+        /// The task result contains the widget zones
+        /// </returns>
+        public Task<IList<string>> GetWidgetZonesAsync()
         {
-            return new List<string>
+            return Task.FromResult<IList<string>>(new List<string>
             {
                 PublicWidgetZones.BodyStartHtmlTagAfter,
                 PublicWidgetZones.BodyEndHtmlTagBefore,
                 AdminWidgetZones.OrderDetailsBlock
-            };
+            });
         }
 
         /// <summary>
@@ -108,10 +102,11 @@ namespace Nop.Plugin.Misc.IPQualityScore
         /// <summary>
         /// Install the plugin
         /// </summary>
-        public override void Install()
+        /// <returns>A task that represents the asynchronous operation</returns>
+        public override async Task InstallAsync()
         {
             //settings
-            _settingService.SaveSetting(new IPQualityScoreSettings
+            await _settingService.SaveSettingAsync(new IPQualityScoreSettings
             {
                 // Common
                 LogRequestErrors = true,
@@ -150,11 +145,11 @@ namespace Nop.Plugin.Misc.IPQualityScore
             if (!_widgetSettings.ActiveWidgetSystemNames.Contains(Defaults.SystemName))
             {
                 _widgetSettings.ActiveWidgetSystemNames.Add(Defaults.SystemName);
-                _settingService.SaveSetting(_widgetSettings);
+                await _settingService.SaveSettingAsync(_widgetSettings);
             }
 
             //locales
-            _localizationService.AddPluginLocaleResource(new Dictionary<string, string>
+            await _localizationService.AddLocaleResourceAsync(new Dictionary<string, string>
             {
                 ["Plugins.Misc.IPQualityScore.DeviceFingerprint"] = "Device Fingerprint",
                 ["Plugins.Misc.IPQualityScore.EmailReputation"] = "Email Validation",
@@ -247,28 +242,38 @@ namespace Nop.Plugin.Misc.IPQualityScore
                 ["Plugins.Misc.IPQualityScore.IPQualityGroups.Checkout"] = "Checkout (shopping cart, checkout steps)",
             });
 
-            base.Install();
+            await base.InstallAsync();
         }
 
         /// <summary>
         /// Uninstall the plugin
         /// </summary>
-        public override void Uninstall()
+        /// <returns>A task that represents the asynchronous operation</returns>
+        public override async Task UninstallAsync()
         {
             //settings
-            _settingService.DeleteSetting<IPQualityScoreSettings>();
+            await _settingService.DeleteSettingAsync<IPQualityScoreSettings>();
 
             if (_widgetSettings.ActiveWidgetSystemNames.Contains(Defaults.SystemName))
             {
                 _widgetSettings.ActiveWidgetSystemNames.Remove(Defaults.SystemName);
-                _settingService.SaveSetting(_widgetSettings);
+                await _settingService.SaveSettingAsync(_widgetSettings);
             }
 
             //locales
-            _localizationService.DeletePluginLocaleResources("Plugins.Misc.IPQualityScore");
+            await _localizationService.DeleteLocaleResourcesAsync("Plugins.Misc.IPQualityScore");
 
-            base.Uninstall();
+            await base.UninstallAsync();
         }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets a value indicating whether to hide this plugin on the widget list page in the admin area
+        /// </summary>
+        public bool HideInWidgetList => true;
 
         #endregion
     }
