@@ -10,7 +10,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
     /// <summary>
     /// Represents a view component to display the IPQualityScore Device Fingerprint JavaScript snippet in public store
     /// </summary>
-    [ViewComponent(Name = Defaults.DEVICE_FINGERPRINT_VIEW_COMPONENT_NAME)]
     public class DeviceFingerprintViewComponent : NopViewComponent
     {
         #region Fields

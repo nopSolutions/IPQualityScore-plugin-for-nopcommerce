@@ -9,7 +9,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Components
     /// <summary>
     /// Represents a view component to display the IPQualityScore IP result information in public store
     /// </summary>
-    [ViewComponent(Name = Defaults.IP_RESULT_INFORMATION_VIEW_COMPONENT_NAME)]
     public class IPResultInformationViewComponent : NopViewComponent
     {
         #region Fields

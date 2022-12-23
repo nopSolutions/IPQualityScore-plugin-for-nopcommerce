@@ -401,8 +401,7 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
         private async Task<IDictionary<string, string>> GetIpReputationTransactionQueryAsync(Order order, HttpContext httpContext)
         {
             var customer = await _customerService.GetCustomerByIdAsync(order.CustomerId);
-            var languageId = await _genericAttributeService.GetAttributeAsync<int>(customer, NopCustomerDefaults.LanguageIdAttribute, order.StoreId);
-            var language = await _languageService.GetLanguageByIdAsync(languageId);
+            var language = await _languageService.GetLanguageByIdAsync(customer.LanguageId ?? 0);
             var orderItems = await _orderService.GetOrderItemsAsync(order.Id);
             var query = GetIpReputationQuery(httpContext, language?.LanguageCulture);
 
@@ -494,8 +493,8 @@ namespace Nop.Plugin.Misc.IPQualityScore.Services
                 .GetMetadata<RouteNameMetadata>()?.RouteName;
 
             //then try to get a generic one (actually it's an action name, not the route)
-            if (string.IsNullOrEmpty(routeName) && httpContext.GetRouteValue(NopPathRouteDefaults.SeNameFieldKey) != null)
-                routeName = httpContext.GetRouteValue(NopPathRouteDefaults.ActionFieldKey)?.ToString();
+            if (string.IsNullOrEmpty(routeName) && httpContext.GetRouteValue(NopRoutingDefaults.RouteValue.SeName) != null)
+                routeName = httpContext.GetRouteValue(NopRoutingDefaults.RouteValue.Action)?.ToString();
 
             return routeName;
         }

@@ -37,21 +37,6 @@ namespace Nop.Plugin.Misc.IPQualityScore
         };
 
         /// <summary>
-        /// Gets a name of the view component to display the IPQualityScore device fingerprint in public store
-        /// </summary>
-        public const string DEVICE_FINGERPRINT_VIEW_COMPONENT_NAME = "IPQualityScoreDeviceFingerprint";
-
-        /// <summary>
-        /// Gets a name of the view component to display the IPQualityScore IP result information in public store
-        /// </summary>
-        public const string IP_RESULT_INFORMATION_VIEW_COMPONENT_NAME = "IPQualityScoreResultInformation";
-
-        /// <summary>
-        /// Gets a name of the view component to display the IPQualityScore order fraud information in admin store
-        /// </summary>
-        public const string ORDER_FRAUD_INFORMATION_VIEW_COMPONENT_NAME = "IPQualityScoreOrderFraudInformation";
-
-        /// <summary>
         /// Gets the route names to display the IPQualityScore device fingerprint in public store
         /// </summary>
         public static string[] DeviceFingerprintRouteNames => new[]

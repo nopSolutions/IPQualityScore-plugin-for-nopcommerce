@@ -13,7 +13,6 @@ namespace Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Components
     /// <summary>
     /// Represents a view component to display the IPQualityScore order fraud information in admin store
     /// </summary>
-    [ViewComponent(Name = Defaults.ORDER_FRAUD_INFORMATION_VIEW_COMPONENT_NAME)]
     public class OrderFraudInformationViewComponent : NopViewComponent
     {
         #region Fields

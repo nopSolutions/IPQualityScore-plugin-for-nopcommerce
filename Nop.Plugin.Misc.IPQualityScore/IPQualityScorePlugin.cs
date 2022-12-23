@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Nop.Core.Domain.Cms;
 using Nop.Core.Domain.Orders;
+using Nop.Plugin.Misc.IPQualityScore.Areas.Admin.Components;
+using Nop.Plugin.Misc.IPQualityScore.Components;
 using Nop.Plugin.Misc.IPQualityScore.Domain;
 using Nop.Services.Cms;
 using Nop.Services.Common;
@@ -51,25 +53,25 @@ namespace Nop.Plugin.Misc.IPQualityScore
         #region Methods
 
         /// <summary>
-        /// Gets a name of a view component for displaying widget
+        /// Gets a type of a view component for displaying widget
         /// </summary>
         /// <param name="widgetZone">Name of the widget zone</param>
-        /// <returns>View component name</returns>
-        public string GetWidgetViewComponentName(string widgetZone)
+        /// <returns>View component type</returns>
+        public Type GetWidgetViewComponent(string widgetZone)
         {
             if (widgetZone == null)
                 throw new ArgumentNullException(nameof(widgetZone));
 
             if (widgetZone.Equals(PublicWidgetZones.BodyStartHtmlTagAfter))
-                return Defaults.DEVICE_FINGERPRINT_VIEW_COMPONENT_NAME;
+                return typeof(DeviceFingerprintViewComponent);
 
             if (widgetZone.Equals(AdminWidgetZones.OrderDetailsBlock))
-                return Defaults.ORDER_FRAUD_INFORMATION_VIEW_COMPONENT_NAME;
+                return typeof(OrderFraudInformationViewComponent);
 
             if (widgetZone.Equals(PublicWidgetZones.BodyEndHtmlTagBefore))
-                return Defaults.IP_RESULT_INFORMATION_VIEW_COMPONENT_NAME;
+                return typeof(IPResultInformationViewComponent);
 
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
